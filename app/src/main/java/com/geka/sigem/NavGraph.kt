@@ -7,6 +7,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.geka.sigem.screens.CursoDetalleScreen
+import com.geka.sigem.screens.CursosScreen
 import com.geka.sigem.screens.HomeScreen
 import com.geka.sigem.screens.LoginScreen
 import com.geka.sigem.screens.MarketScreen
@@ -48,6 +50,9 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     onNavigateToMarket = {
                         navController.navigate(Screen.Market.route)
                     },
+                    onNavigateToCursos = {                           // ← aquí también
+                        navController.navigate(Screen.Cursos.route)
+                    },
                     onLogout = {
                         authViewModel.logout {
                             navController.navigate(Screen.Login.route) {
@@ -57,9 +62,27 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     }
                 )
             }
+
             composable(Screen.Market.route) {
                 MarketScreen(onBack = { navController.popBackStack() })
             }
+
+            composable(Screen.Cursos.route) {
+                CursosScreen(onVerCurso = { idCurso ->
+                    navController.navigate("cursoDetalle/$idCurso")
+                })
+            }
+
+            composable("cursoDetalle/{idCurso}") { backStackEntry ->
+                val idCurso = backStackEntry.arguments?.getString("idCurso")!!.toInt()
+                CursoDetalleScreen(
+                    idCurso = idCurso,
+                    idUsuario = 6,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+
         }
     }
 }
