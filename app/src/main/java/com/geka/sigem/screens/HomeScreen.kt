@@ -9,17 +9,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.geka.sigem.components.AppDrawer
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.layout.padding
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    onNavigateToSolicitudes: () -> Unit,
     onNavigateToMarket: () -> Unit,
+    onNavigateToCursos: () -> Unit,     // ← agregado
     onLogout: () -> Unit
 ) {
-    // state to control drawer
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -29,11 +28,18 @@ fun HomeScreen(
             AppDrawer(
                 onMarket = {
                     onNavigateToMarket()
-                    // close drawer
+                    scope.launch { drawerState.close() }
+                },
+                onCursos = {                 // ← agregado
+                    onNavigateToCursos()
                     scope.launch { drawerState.close() }
                 },
                 onLogout = {
                     onLogout()
+                    scope.launch { drawerState.close() }
+                },
+                onSolicitudes = {
+                    onNavigateToSolicitudes()
                     scope.launch { drawerState.close() }
                 }
             )
@@ -41,7 +47,7 @@ fun HomeScreen(
     ) {
         Scaffold(
             topBar = {
-                SmallTopAppBar(
+                TopAppBar(
                     title = { Text("Home") },
                     navigationIcon = {
                         IconButton(onClick = {
@@ -53,7 +59,6 @@ fun HomeScreen(
                 )
             }
         ) { innerPadding ->
-            // Home content
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
