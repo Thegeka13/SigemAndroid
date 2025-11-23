@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    onNavigateToSolicitudes: () -> Unit,
     onNavigateToMarket: () -> Unit,
     onNavigateToCursos: () -> Unit,     // ← agregado
     onLogout: () -> Unit
@@ -35,6 +36,10 @@ fun HomeScreen(
                 },
                 onLogout = {
                     onLogout()
+                    scope.launch { drawerState.close() }
+                },
+                onSolicitudes = {
+                    onNavigateToSolicitudes()
                     scope.launch { drawerState.close() }
                 }
             )

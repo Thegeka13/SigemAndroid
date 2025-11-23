@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 fun AppDrawer(
     onMarket: () -> Unit,
     onCursos: () -> Unit,   // ← Nuevo callback
+    onSolicitudes: () -> Unit,
     onLogout: () -> Unit
 ) {
     ModalDrawerSheet {
@@ -54,6 +55,14 @@ fun AppDrawer(
                 icon = { Icon(Icons.Default.Logout, "Logout") },
                 selected = false,
                 onClick = { onLogout() },
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+
+            NavigationDrawerItem(
+                label = { Text("Solicitudes") },
+                icon = { Icon(Icons.Default.ShoppingCart, "Solicitudes") },
+                selected = false,
+                onClick = { onSolicitudes() },
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }

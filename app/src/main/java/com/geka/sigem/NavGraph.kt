@@ -2,87 +2,132 @@ package com.geka.sigem
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.geka.sigem.screens.CursoDetalleScreen
-import com.geka.sigem.screens.CursosScreen
-import com.geka.sigem.screens.HomeScreen
-import com.geka.sigem.screens.LoginScreen
-import com.geka.sigem.screens.MarketScreen
+import com.geka.sigem.screens.*
+import com.geka.sigem.ui.viewmodel.AuthViewModel
+import com.geka.sigem.Screen
 
 @Composable
 fun AppNavHost(authViewModel: AuthViewModel) {
+
     val navController = rememberNavController()
-    val isLoggedInState by authViewModel.isLoggedIn.collectAsState()
 
-    // until we know session, don't render nav host (could show splash)
-    if (isLoggedInState == null) {
-        // loading state - simple blank or loading indicator
-        return
-    }
+    // Flujo del login
+    val loginResponse by authViewModel.loginState.collectAsState()
 
-    // Recreate NavHost when start destination changes
-    key(isLoggedInState) {
-        val start = if (isLoggedInState == true) Screen.Home.route else Screen.Login.route
+    // Estado de sesión
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
-        NavHost(navController = navController, startDestination = start) {
-            composable(Screen.Login.route) {
-                LoginScreen(
-                    onLogin = { password ->
-                        authViewModel.login(password) { success ->
-                            if (success) {
-                                // navigate to home and clear backstack
-                                navController.navigate(Screen.Home.route) {
-                                    popUpTo(Screen.Login.route) { inclusive = true }
-                                }
-                            } else {
-                                // keep on screen; LoginScreen shows error
-                            }
+    // Si null → aún cargando
+    if (isLoggedIn == null) return
+
+    val startDestination =
+        if (isLoggedIn == true) Screen.Home.route else Screen.Login.route
+
+    NavHost(navController = navController, startDestination = startDestination) {
+
+        // -------------------------------
+        // LOGIN
+        // -------------------------------
+        composable(Screen.Login.route) {
+
+            LoginScreen(
+                onLogin = { usuario, pass ->
+                    authViewModel.login(usuario, pass)
+                }
+            )
+
+            // Navegar cuando login es exitoso
+            if (loginResponse != null) {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
+                }
+            }
+        }
+
+        // -------------------------------
+        // HOME
+        // -------------------------------
+        composable(Screen.Home.route) {
+            HomeScreen(
+                onNavigateToSolicitudes = {
+                    navController.navigate(Screen.Solicitudes.route)
+                },
+                onNavigateToMarket = {
+                    navController.navigate(Screen.Market.route)
+                },
+                onNavigateToCursos = {
+                    navController.navigate(Screen.Cursos.route)
+                },
+                onLogout = {
+                    authViewModel.logout {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
                         }
                     }
-                )
-            }
-            composable(Screen.Home.route) {
-                HomeScreen(
-                    onNavigateToMarket = {
-                        navController.navigate(Screen.Market.route)
-                    },
-                    onNavigateToCursos = {                           // ← aquí también
-                        navController.navigate(Screen.Cursos.route)
-                    },
-                    onLogout = {
-                        authViewModel.logout {
-                            navController.navigate(Screen.Login.route) {
-                                popUpTo(Screen.Home.route) { inclusive = true }
-                            }
+                }
+            )
+        }
+
+        composable(Screen.Home.route) {
+            HomeScreen(
+                onNavigateToSolicitudes = { navController.navigate(Screen.Solicitudes.route) },
+                onNavigateToMarket = { navController.navigate(Screen.Market.route) },
+                onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
+                onLogout = {
+                    authViewModel.logout {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
                         }
                     }
-                )
-            }
+                }
+            )
+        }
 
-            composable(Screen.Market.route) {
-                MarketScreen(onBack = { navController.popBackStack() })
-            }
 
-            composable(Screen.Cursos.route) {
-                CursosScreen(onVerCurso = { idCurso ->
+        // -------------------------------
+        // MARKET
+        // -------------------------------
+        composable(Screen.Market.route) {
+            MarketScreen(onBack = { navController.popBackStack() })
+        }
+
+        //--------------------------------
+        // SOLICITUDES
+        //--------------------------------
+
+        composable(Screen.Solicitudes.route) {
+            SolicitudesScreen(
+                idEmpleado = authViewModel.idEmpleado!!
+            )
+        }
+
+
+        // -------------------------------
+        // CURSOS
+        // -------------------------------
+        composable(Screen.Cursos.route) {
+            CursosScreen(
+                onVerCurso = { idCurso ->
                     navController.navigate("cursoDetalle/$idCurso")
-                })
-            }
+                }
+            )
+        }
 
-            composable("cursoDetalle/{idCurso}") { backStackEntry ->
-                val idCurso = backStackEntry.arguments?.getString("idCurso")!!.toInt()
-                CursoDetalleScreen(
-                    idCurso = idCurso,
-                    idUsuario = 6,
-                    onBack = { navController.popBackStack() }
-                )
-            }
+        // -------------------------------
+        // DETALLE CURSO
+        // -------------------------------
+        composable("cursoDetalle/{idCurso}") { backStackEntry ->
+            val idCurso = backStackEntry.arguments?.getString("idCurso")!!.toInt()
 
-
+            CursoDetalleScreen(
+                idCurso = idCurso,
+                idUsuario = 6,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }
