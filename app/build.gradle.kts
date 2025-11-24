@@ -2,6 +2,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    // --- IMPORTS DE HILT FALTANTES ---
+    id("com.google.dagger.hilt.android") // 1. Plugin de Hilt
+    id("kotlin-kapt") // 2. Plugin Kapt (necesario para el procesamiento de anotaciones)
+    // ---------------------------------
 }
 
 android {
@@ -58,17 +63,32 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("androidx.compose.material:material-icons-extended")
-
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Retrofit + Gson
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-// OkHttp (opcional, útil para logging)
+
+    // OkHttp
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
-// Coroutines + Lifecycle
+
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-// (Si usas Jetpack Compose ya lo tendrás: material3, navigation-compose, etc.)
+
+    // Coil (para cargar imágenes en Compose)
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Kotlin Serialization (si la usas con Retrofit)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    implementation(libs.androidx.material3)
+
+    // --- DEPENDENCIAS DE HILT FALTANTES ---
+    implementation("com.google.dagger:hilt-android:2.48.1")
+    kapt("com.google.dagger:hilt-compiler:2.48.1")
+    kapt("androidx.hilt:hilt-compiler:1.1.0") // Para integrar Hilt con AndroidX/ViewModel
+    // ------------------------------------
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -77,4 +97,6 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation ("com.github.chuckerteam.chucker:library:4.0.0")
+    releaseImplementation ("com.github.chuckerteam.chucker:library-no-op:4.0.0")
 }
