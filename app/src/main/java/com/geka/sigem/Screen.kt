@@ -7,6 +7,9 @@ sealed class Screen(val route: String) {
     object Cursos: Screen ("cursos")
     object CursoDetalle: Screen ("curso/{id}")
 
-    object Solicitudes : Screen("solicitudes")   // ← FALTABA
+    object Solicitudes : Screen("solicitudes")
+
+    object CrearSolicitud : Screen("crear_solicitud")
+
 
 }

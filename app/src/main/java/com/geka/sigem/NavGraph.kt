@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.geka.sigem.screens.*
 import com.geka.sigem.ui.viewmodel.AuthViewModel
 import com.geka.sigem.Screen
+import com.geka.sigem.screens.CrearSolicitudScreen
 
 @Composable
 fun AppNavHost(authViewModel: AuthViewModel) {
@@ -101,10 +102,22 @@ fun AppNavHost(authViewModel: AuthViewModel) {
 
         composable(Screen.Solicitudes.route) {
             SolicitudesScreen(
-                idEmpleado = authViewModel.idEmpleado!!
+                idEmpleado = authViewModel.idEmpleado!!,
+                onCrearSolicitud = {
+                    navController.navigate(Screen.CrearSolicitud.route)
+                }
             )
         }
 
+        composable(Screen.CrearSolicitud.route) {
+
+            val loginState by authViewModel.loginState.collectAsState()
+
+            CrearSolicitudScreen(
+                idEmpleado = loginState?.idEmpleado ?: 0,
+                onBack = { navController.popBackStack() }
+            )
+        }
 
         // -------------------------------
         // CURSOS
