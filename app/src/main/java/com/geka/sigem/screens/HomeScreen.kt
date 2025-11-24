@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.padding
 @Composable
 fun HomeScreen(
     onNavigateToMarket: () -> Unit,
-    onNavigateToCursos: () -> Unit,     // ← agregado
+    onNavigateToCursos: () -> Unit,
     onLogout: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -29,7 +29,7 @@ fun HomeScreen(
                     onNavigateToMarket()
                     scope.launch { drawerState.close() }
                 },
-                onCursos = {                 // ← agregado
+                onCursos = {
                     onNavigateToCursos()
                     scope.launch { drawerState.close() }
                 },
