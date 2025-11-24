@@ -18,6 +18,7 @@ import com.geka.sigem.viewmodel.MarketplaceViewModel
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
+import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +33,9 @@ fun MarketplaceEditScreen(
     var producto by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
+
+    // 1. Estado de carga para la animación del botón
+    var isSaving by remember { mutableStateOf(false) }
 
     val fotosAEliminar = remember { mutableStateListOf<Int>() }
     val nuevasUris = remember { mutableStateListOf<Uri>() }
@@ -121,21 +125,22 @@ fun MarketplaceEditScreen(
 
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(pub.fotos) { foto ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                        AsyncImage(
-                            model = foto.link,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .height(110.dp)
-                                .width(140.dp)
-                        )
-
-                        TextButton(onClick = {
-                            fotosAEliminar.add(foto.idFoto)
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = null)
-                            Text("Eliminar")
+                    // Ocultamos visualmente las que el usuario marcó para borrar
+                    if (!fotosAEliminar.contains(foto.idFoto)) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            AsyncImage(
+                                model = foto.link,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .height(110.dp)
+                                    .width(140.dp)
+                            )
+                            TextButton(onClick = {
+                                fotosAEliminar.add(foto.idFoto)
+                            }) {
+                                Icon(Icons.Default.Delete, contentDescription = null)
+                                Text("Eliminar")
+                            }
                         }
                     }
                 }
@@ -165,8 +170,12 @@ fun MarketplaceEditScreen(
 
             Spacer(Modifier.height(24.dp))
 
+            // 2. Botón modificado con lógica de carga
             Button(
+                // Deshabilitar mientras guarda o si faltan datos obligatorios
+                enabled = !isSaving && producto.isNotEmpty() && precio.isNotEmpty(),
                 onClick = {
+                    isSaving = true // Activamos el spinner
                     val nuevosFiles = nuevasUris.map { uriToFile(context, it) }
 
                     viewModel.actualizarPublicacion(
@@ -178,13 +187,28 @@ fun MarketplaceEditScreen(
                         fotosAEliminar = fotosAEliminar.toList(),
                         nuevasImagenes = nuevosFiles,
                         onFinish = { success ->
-                            if (success) onBack()
+                            isSaving = false // Desactivamos el spinner
+                            if (success) {
+                                Toast.makeText(context, "Publicación actualizada", Toast.LENGTH_SHORT).show()
+                                onBack()
+                            } else {
+                                Toast.makeText(context, "Error al actualizar", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     )
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Guardar cambios")
+                // 3. Contenido condicional del botón
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Guardar cambios")
+                }
             }
         }
     }
