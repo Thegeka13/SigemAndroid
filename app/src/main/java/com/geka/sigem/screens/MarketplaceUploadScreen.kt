@@ -47,7 +47,9 @@ fun MarketplaceUploadScreen(
 
     Scaffold(
         topBar = {
+
             CenterAlignedTopAppBar(
+
                 title = { Text("Subir publicación") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

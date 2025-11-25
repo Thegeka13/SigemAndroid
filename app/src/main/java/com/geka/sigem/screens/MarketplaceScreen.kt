@@ -35,11 +35,10 @@ fun MarketplaceScreen(
     val listaAMostrar = remember(todasLasPublicaciones, isMyPosts, idUsuario) {
         if (isMyPosts) {
             todasLasPublicaciones?.filter { pub ->
-                // CORRECCIÓN: Usamos try-catch porque pub.idUsuario lanza error si el usuario es null
                 try {
                     pub.usuario.id == idUsuario
                 } catch (e: Exception) {
-                    false // Si falla (usuario null), no es mi publicación
+                    false
                 }
             }
         } else {
@@ -52,7 +51,17 @@ fun MarketplaceScreen(
     }
 
     Scaffold(
-        topBar = {
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { onOpenUpload() },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Crear publicación"
+                )
+            }
         }
     ) { padding ->
 
@@ -175,11 +184,11 @@ fun MarketplaceScreen(
                                                 color = MaterialTheme.colorScheme.primary
                                             )
 
-                                            // CORRECCIÓN: Acceso seguro al ID del usuario
+                                            // Acceso seguro al ID del usuario
                                             val postOwnerId = try {
                                                 pub.usuario.id
                                             } catch (e: Exception) {
-                                                -1 // Valor por defecto si falla
+                                                -1
                                             }
 
                                             if (postOwnerId == idUsuario) {
