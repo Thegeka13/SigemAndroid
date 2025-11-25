@@ -19,6 +19,7 @@ fun MainLayout(
     onNavigateToSolicitudes: () -> Unit,
     onNavigateToMarket: () -> Unit,
     onNavigateToCursos: () -> Unit,
+    onNavigateToApoyos: () -> Unit,
     onLogout: () -> Unit,
     // Opcional: Acciones específicas de la barra superior (ej. botón "+" en marketplace)
     topBarActions: @Composable RowScope.() -> Unit = {},
@@ -39,6 +40,10 @@ fun MainLayout(
                 onCursos = {
                     scope.launch { drawerState.close() }
                     onNavigateToCursos()
+                },
+                onApoyos = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToApoyos()
                 },
                 onSolicitudes = {
                     scope.launch { drawerState.close() }
