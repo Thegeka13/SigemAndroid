@@ -29,7 +29,7 @@ class AuthViewModel : ViewModel() {
             try {
                 val response = repository.login(usuario, contrasenia)
 
-                // ⬅️ Guarda el idEmpleado aquí
+                // Guarda el idEmpleado aquí
                 idEmpleado = response.idEmpleado
 
                 _loginState.value = response

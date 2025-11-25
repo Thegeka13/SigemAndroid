@@ -14,7 +14,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.geka.sigem.ui.theme.SigemTheme
 import com.geka.sigem.ui.viewmodel.AuthViewModel
-import com.geka.sigem.AppNavHost
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

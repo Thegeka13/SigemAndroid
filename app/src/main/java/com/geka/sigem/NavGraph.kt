@@ -1,6 +1,7 @@
 package com.geka.sigem
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.compose.NavHost
@@ -101,12 +102,31 @@ fun AppNavHost(authViewModel: AuthViewModel) {
         //--------------------------------
 
         composable(Screen.Solicitudes.route) {
-            SolicitudesScreen(
-                idEmpleado = authViewModel.idEmpleado!!,
-                onCrearSolicitud = {
-                    navController.navigate(Screen.CrearSolicitud.route)
+            val id = authViewModel.idEmpleado
+            if (id == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0)
+                    }
                 }
-            )
+            } else {
+                SolicitudesScreen(
+                    idEmpleado = authViewModel.idEmpleado!!,
+                    onNavigateToSolicitudes = { },
+                    onNavigateToMarket = { navController.navigate(Screen.Market.route) },
+                    onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
+                    onLogout = {
+                        authViewModel.logout {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        }
+                    },
+                    onCrearSolicitud = {
+                        navController.navigate(Screen.CrearSolicitud.route)
+                    }
+                )
+            }
         }
 
         composable(Screen.CrearSolicitud.route) {
