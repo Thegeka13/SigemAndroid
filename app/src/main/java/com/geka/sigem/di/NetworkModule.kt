@@ -1,7 +1,8 @@
 package com.geka.sigem.di
 
 import android.content.Context
-import com.chuckerteam.chucker.api.ChuckerInterceptor // Importar Chucker
+import com.chuckerteam.chucker.api.ChuckerInterceptor
+import com.geka.sigem.data.remote.EventoApi
 import com.geka.sigem.data.remote.MarketplaceApi
 import dagger.Module
 import dagger.Provides
@@ -19,45 +20,57 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    private const val BASE_URL = "https://sigembackend-production.up.railway.app/"
+
+    // ----------------------------
+    // OKHTTP CLIENT + CHUCKER
+    // ----------------------------
     @Provides
     @Singleton
     fun provideOkHttpClient(
-        @ApplicationContext context: Context // 1. Inyectamos el contexto aquí
+        @ApplicationContext context: Context
     ): OkHttpClient {
 
-        // Logcat normal
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
-        // 2. Creamos el interceptor de Chucker
-        val chuckerInterceptor = ChuckerInterceptor.Builder(context)
-            .maxContentLength(250000L) // Para que lea JSONs largos
+        val chucker = ChuckerInterceptor.Builder(context)
+            .maxContentLength(250_000L)
             .alwaysReadResponseBody(true)
             .build()
 
         return OkHttpClient.Builder()
-            .addInterceptor(logging) // Logs en consola
-            .addInterceptor(chuckerInterceptor) // <--- ¡LA MAGIA AQUÍ! Logs en Notificación
+            .addInterceptor(logging)
+            .addInterceptor(chucker)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }
 
+    // ----------------------------
+    // RETROFIT
+    // ----------------------------
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl("https://sigembackend-production.up.railway.app/")
-            .client(okHttpClient)
+    fun provideRetrofit(client: OkHttpClient): Retrofit =
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-    }
+
+    // ----------------------------
+    // APIs — Marketplace + Evento
+    // ----------------------------
+    @Provides
+    @Singleton
+    fun provideMarketplaceApi(retrofit: Retrofit): MarketplaceApi =
+        retrofit.create(MarketplaceApi::class.java)
 
     @Provides
     @Singleton
-    fun provideMarketplaceApi(retrofit: Retrofit): MarketplaceApi {
-        return retrofit.create(MarketplaceApi::class.java)
-    }
+    fun provideEventoApi(retrofit: Retrofit): EventoApi =
+        retrofit.create(EventoApi::class.java)
 }

@@ -37,9 +37,29 @@ fun CursosScreen(
         viewModel.loadCursos()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            AppDrawer(
+                onMarket = {
+                    scope.launch { drawerState.close() }
+                    onMarket()
+                },
+                onCursos = {
+                    scope.launch { drawerState.close() }
+                    onCursos()
+                },
+                onLogout = {
+                    scope.launch { drawerState.close() }
+                    onLogout()
+                }, onSolicitudes = {
+                    scope.launch { drawerState.close() }
+                    onLogout()
+                }, onEventos =  {
+                scope.launch { drawerState.close() }
+            }
+            )
+        }
     ) {
 
         HeaderCursos(onMisCursos)

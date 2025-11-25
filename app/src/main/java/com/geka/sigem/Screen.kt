@@ -32,4 +32,9 @@ sealed class Screen(val route: String) {
     // SOLICITUDES
     // ----------------------
     object Solicitudes : Screen("solicitudes")
+
+
+    object Eventos : Screen("eventos")
+    object EventoDetalle : Screen("eventos/detalle/{idEvento}")
+
 }
