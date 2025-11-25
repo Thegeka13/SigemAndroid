@@ -41,6 +41,10 @@ object RetrofitClient {
         retrofit.create(SolicitudApiService::class.java)
     }
 
+    // Servicio de Apoyos
+    val apoyoApi: ApoyoApiService by lazy {
+        retrofit.create(ApoyoApiService::class.java)
+    }
 
 
 }

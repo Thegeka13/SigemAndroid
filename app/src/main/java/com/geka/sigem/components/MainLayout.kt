@@ -18,6 +18,7 @@ fun MainLayout(
     onNavigateToSolicitudes: () -> Unit,
     onNavigateToMarket: () -> Unit,
     onNavigateToCursos: () -> Unit,
+    onNavigateToApoyos: () -> Unit,
     onNavigateToEventos: () -> Unit,   // ← AGREGADO
     onLogout: () -> Unit,
 
@@ -41,6 +42,10 @@ fun MainLayout(
                 onCursos = {
                     scope.launch { drawerState.close() }
                     onNavigateToCursos()
+                },
+                onApoyos = {
+                    scope.launch { drawerState.close() }
+                    onNavigateToApoyos()
                 },
                 onSolicitudes = {
                     scope.launch { drawerState.close() }

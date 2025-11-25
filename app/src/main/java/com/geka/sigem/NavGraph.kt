@@ -74,6 +74,10 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         navController.navigate(Screen.Cursos.route) { launchSingleTop = true }
                         scope.launch { drawerState.close() }
                     },
+                    onApoyos = {
+                        navController.navigate(Screen.Apoyos.route) { launchSingleTop = true }
+                        scope.launch { drawerState.close() }
+                    },
                     onSolicitudes = {
                         navController.navigate(Screen.Solicitudes.route) { launchSingleTop = true }
                         scope.launch { drawerState.close() }
@@ -229,6 +233,35 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 composable(Screen.Solicitudes.route) {
                     SolicitudesScreen(idEmpleado = realUserId)
                 }
+
+                // -------------------
+                // APOYOS
+                // -------------------
+                composable(Screen.Apoyos.route) {
+                    ApoyosScreen(
+                        onVerApoyo = { idApoyo ->
+                            navController.navigate("apoyoDetalle/$idApoyo")
+                        }
+                    )
+                }
+
+                // -------------------
+                // DETALLE APOYO
+                // -------------------
+                composable("apoyoDetalle/{idApoyo}") { backStackEntry ->
+                    val idApoyo = backStackEntry.arguments?.getString("idApoyo")?.toIntOrNull() ?: run {
+                        navController.popBackStack()
+                        return@composable
+                    }
+
+                    ApoyoDetalleScreen(
+                        idApoyo = idApoyo,
+                        usuarioId = realUserId,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+
 
                 // -------------------
                 // CURSOS

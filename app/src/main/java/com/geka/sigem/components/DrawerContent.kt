@@ -7,6 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Logout
@@ -21,6 +22,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AppDrawer(
     onMarket: () -> Unit,
+    onCursos: () -> Unit,   // ← Nuevo callback
+    onApoyos: () -> Unit,
     onCursos: () -> Unit,
     onSolicitudes: () -> Unit,
     onEventos: () -> Unit,  // ← NUEVO CALLBACK
@@ -51,6 +54,15 @@ fun AppDrawer(
                 onClick = { onCursos() },
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
+
+            //Apoyos
+            NavigationDrawerItem(
+                icon = { Icon(Icons.Default.CardGiftcard, contentDescription = null) }, // 👈 Cambia aquí
+                label = { Text("Apoyos") },
+                selected = false,
+                onClick = onApoyos
+            )
+
 
             // ✅ NUEVO BOTÓN DE EVENTOS
             NavigationDrawerItem(
