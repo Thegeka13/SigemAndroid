@@ -1,9 +1,33 @@
 package com.geka.sigem
 
 sealed class Screen(val route: String) {
-    object Login : Screen("login")
-    object Home : Screen("home")
-    object Market : Screen("market")
 
-    object Cursos: Screen ("cursos")
+    // ----------------------
+    // AUTENTICACIÓN
+    // ----------------------
+    object Login : Screen("login")
+
+    // ----------------------
+    // PRINCIPAL
+    // ----------------------
+    object Home : Screen("home")
+
+    // ----------------------
+    // MARKETPLACE
+    // ----------------------
+    object Market : Screen("market")
+    object MarketNewPost : Screen("market/new")
+    object MarketMyPosts : Screen("market/myposts")
+    object MarketDetail : Screen("market/detail/{id}")
+
+    // ----------------------
+    // CURSOS
+    // ----------------------
+    object Cursos : Screen("cursos")
+    object CursoDetalle : Screen("curso/{id}")
+
+    // ----------------------
+    // SOLICITUDES
+    // ----------------------
+    object Solicitudes : Screen("solicitudes")
 }
