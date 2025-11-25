@@ -1,74 +1,49 @@
 package com.geka.sigem.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.geka.sigem.components.AppDrawer
-import kotlinx.coroutines.launch
-import androidx.compose.foundation.layout.padding
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    // Mantenemos estos parámetros para que coincida con la llamada en AppNavHost,
+    // pero ya no sirven para el menú lateral, sirven si quieres botones en el centro.
     onNavigateToSolicitudes: () -> Unit,
     onNavigateToMarket: () -> Unit,
-    onNavigateToCursos: () -> Unit,     // ← agregado
+    onNavigateToCursos: () -> Unit,
     onLogout: () -> Unit
 ) {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
+    // YA NO usamos MainLayout ni Scaffold.
+    // El AppNavHost se encarga de todo el marco.
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            AppDrawer(
-                onMarket = {
-                    onNavigateToMarket()
-                    scope.launch { drawerState.close() }
-                },
-                onCursos = {                 // ← agregado
-                    onNavigateToCursos()
-                    scope.launch { drawerState.close() }
-                },
-                onLogout = {
-                    onLogout()
-                    scope.launch { drawerState.close() }
-                },
-                onSolicitudes = {
-                    onNavigateToSolicitudes()
-                    scope.launch { drawerState.close() }
-                }
-            )
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Home") },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch { drawerState.open() }
-                        }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                    }
-                )
-            }
-        ) { innerPadding ->
-            Surface(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-                Text(
-                    text = "Pantalla principal (Home)",
-                    modifier = Modifier.padding(24.dp)
-                )
-            }
+        Text(
+            text = "Bienvenido a Sigem",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        Text(
+            text = "Selecciona una opción del menú o usa los accesos directos:",
+            modifier = Modifier.padding(vertical = 16.dp)
+        )
+
+        // Ejemplo: Botones de acceso rápido en el Home
+        Button(onClick = onNavigateToMarket) {
+            Text("Ir al Marketplace")
         }
     }
 }
