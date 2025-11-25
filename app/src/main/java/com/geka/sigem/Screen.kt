@@ -34,6 +34,10 @@ sealed class Screen(val route: String) {
     object Solicitudes : Screen("solicitudes")
 
 
+    object Solicitudes : Screen("solicitudes")
+
+    object CrearSolicitud : Screen("crear_solicitud")
+
     object Eventos : Screen("eventos")
     object EventoDetalle : Screen("eventos/detalle/{idEvento}")
 

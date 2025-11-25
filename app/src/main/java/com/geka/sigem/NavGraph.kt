@@ -1,5 +1,9 @@
 package com.geka.sigem
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -16,6 +20,8 @@ import androidx.navigation.navArgument
 import com.geka.sigem.components.AppDrawer
 import com.geka.sigem.screens.*
 import com.geka.sigem.ui.viewmodel.AuthViewModel
+import com.geka.sigem.Screen
+import com.geka.sigem.screens.CrearSolicitudScreen
 import com.geka.sigem.viewmodel.EventoViewModel
 import com.geka.sigem.viewmodel.MarketplaceViewModel
 import kotlinx.coroutines.launch
@@ -252,6 +258,32 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
+        composable(Screen.Solicitudes.route) {
+            val id = authViewModel.idEmpleado
+            if (id == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0)
+                    }
+                }
+            } else {
+                SolicitudesScreen(
+                    idEmpleado = authViewModel.idEmpleado!!,
+                    onNavigateToMarket = { navController.navigate(Screen.Market.route) },
+                    onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
+                    onLogout = {
+                        authViewModel.logout {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        }
+                    },
+                    onCrearSolicitud = {
+                        navController.navigate(Screen.CrearSolicitud.route)
+                    }
+                )
+            }
+        }
                 // -------------------
                 // MIS CURSOS
                 // -------------------
@@ -262,6 +294,15 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
+        composable(Screen.CrearSolicitud.route) {
+
+            val loginState by authViewModel.loginState.collectAsState()
+
+            CrearSolicitudScreen(
+                idEmpleado = loginState?.idEmpleado ?: 0,
+                onBack = { navController.popBackStack() }
+            )
+        }
 
                 // -------------------
                 // DETALLE CURSO

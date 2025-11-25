@@ -7,6 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.School
@@ -62,7 +63,7 @@ fun AppDrawer(
 
             NavigationDrawerItem(
                 label = { Text("Solicitudes") },
-                icon = { Icon(Icons.Default.ShoppingCart, "Solicitudes") },
+                icon = { Icon(Icons.Default.CalendarToday, "Solicitudes") },
                 selected = false,
                 onClick = { onSolicitudes() },
                 modifier = Modifier.padding(horizontal = 8.dp)
