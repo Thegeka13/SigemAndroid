@@ -59,6 +59,9 @@ fun CursosScreen(
                 onLogout = {
                     scope.launch { drawerState.close() }
                     onLogout()
+                }, onSolicitudes = {
+                    scope.launch { drawerState.close() }
+                    onLogout()
                 }
             )
         }
@@ -238,7 +241,7 @@ fun CursoRow(
 }
 
 @Composable
-private fun InfoRow(
+private fun CursoInfoRow(
     icon: ImageVector,
     label: String,
     value: String
