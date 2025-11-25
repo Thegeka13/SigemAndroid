@@ -2,8 +2,8 @@ package com.geka.sigem.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.geka.sigem.data.models.Curso
 import com.geka.sigem.data.models.InscritoRequest
+import com.geka.sigem.data.models.Curso
 import com.geka.sigem.data.repository.CursoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,10 +26,26 @@ class CursosViewModel : ViewModel() {
     val message: StateFlow<String?> = _message
 
 
+    private val _misCursos = MutableStateFlow<List<Curso>>(emptyList())
+    val misCursos: StateFlow<List<Curso>> = _misCursos
+
     fun setMessage(msg: String?) {
         _message.value = msg
     }
 
+
+    fun loadMisCursos(idUsuario: Int) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                _misCursos.value = repository.getCursosInscrito(idUsuario)
+            } catch (e: Exception) {
+                _message.value = "Error al cargar mis cursos: ${e.message}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
 
     // ------------------------------
     // CARGAR LISTA DE CURSOS

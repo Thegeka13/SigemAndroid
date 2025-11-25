@@ -240,9 +240,23 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                                     popUpTo(Screen.Home.route) { inclusive = true }
                                 }
                             }
-                        }
+                        },
+                        onMisCursos = {
+                            navController.navigate(Screen.MisCursos.route)
+                        },
                     )
                 }
+
+                // -------------------
+                // MIS CURSOS
+                // -------------------
+                composable(Screen.MisCursos.route) {
+                    MisCursosScreen(
+                        idUsuario = realUserId,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
 
                 // -------------------
                 // DETALLE CURSO

@@ -41,4 +41,6 @@ object RetrofitClient {
         retrofit.create(SolicitudApiService::class.java)
     }
 
+
+
 }
