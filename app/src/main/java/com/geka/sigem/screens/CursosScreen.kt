@@ -62,7 +62,9 @@ fun CursosScreen(
                 }, onSolicitudes = {
                     scope.launch { drawerState.close() }
                     onLogout()
-                }
+                }, onEventos =  {
+                scope.launch { drawerState.close() }
+            }
             )
         }
     ) {

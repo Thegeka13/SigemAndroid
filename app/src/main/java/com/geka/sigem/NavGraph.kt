@@ -16,6 +16,7 @@ import androidx.navigation.navArgument
 import com.geka.sigem.components.AppDrawer
 import com.geka.sigem.screens.*
 import com.geka.sigem.ui.viewmodel.AuthViewModel
+import com.geka.sigem.viewmodel.EventoViewModel
 import com.geka.sigem.viewmodel.MarketplaceViewModel
 import kotlinx.coroutines.launch
 
@@ -69,6 +70,10 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     },
                     onSolicitudes = {
                         navController.navigate(Screen.Solicitudes.route) { launchSingleTop = true }
+                        scope.launch { drawerState.close() }
+                    },
+                    onEventos = {                  // ← AQUÍ LO AGREGAS
+                        navController.navigate(Screen.Eventos.route) { launchSingleTop = true }
                         scope.launch { drawerState.close() }
                     },
                     onLogout = {
@@ -258,6 +263,32 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         onBack = { navController.popBackStack() }
                     )
                 }
+
+                // EVENTOS - LISTA
+                composable(Screen.Eventos.route) {
+                    val vm: EventoViewModel = hiltViewModel()
+                    EventosScreen(
+                        viewModel = vm,
+                        onOpenDetail = { id ->
+                            navController.navigate("eventos/detalle/$id")
+                        }
+                    )
+                }
+
+                // EVENTO DETALLE
+                composable(
+                    route = "eventos/detalle/{idEvento}",
+                    arguments = listOf(navArgument("idEvento") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val idEvento = backStackEntry.arguments?.getInt("idEvento") ?: return@composable
+                    val vm: EventoViewModel = hiltViewModel()
+                    EventoDetalleScreen(
+                        idEvento = idEvento,
+                        viewModel = vm,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
             }
         }
     }
