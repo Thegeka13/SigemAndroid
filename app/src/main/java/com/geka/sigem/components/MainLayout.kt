@@ -2,28 +2,30 @@ package com.geka.sigem.components
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainLayout(
     title: String,
-    // Callbacks de navegación generales
+
+    // Callbacks generales del menú
     onNavigateToSolicitudes: () -> Unit,
     onNavigateToMarket: () -> Unit,
     onNavigateToCursos: () -> Unit,
     onNavigateToApoyos: () -> Unit,
+    onNavigateToEventos: () -> Unit,   // ← AGREGADO
     onLogout: () -> Unit,
-    // Opcional: Acciones específicas de la barra superior (ej. botón "+" en marketplace)
+
+    // Acciones de la topbar (opcional)
     topBarActions: @Composable RowScope.() -> Unit = {},
-    // El contenido de la pantalla específica
+
+    // Contenido de la pantalla
     content: @Composable (PaddingValues) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -49,6 +51,10 @@ fun MainLayout(
                     scope.launch { drawerState.close() }
                     onNavigateToSolicitudes()
                 },
+                onEventos = {                    // ← CORREGIDO
+                    scope.launch { drawerState.close() }
+                    onNavigateToEventos()
+                },
                 onLogout = {
                     scope.launch { drawerState.close() }
                     onLogout()
@@ -67,11 +73,10 @@ fun MainLayout(
                             Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
                         }
                     },
-                    actions = topBarActions // Aquí inyectamos los botones extra si existen
+                    actions = topBarActions
                 )
             }
         ) { innerPadding ->
-            // Aquí se renderiza tu pantalla (Marketplace, Home, etc.)
             content(innerPadding)
         }
     }
