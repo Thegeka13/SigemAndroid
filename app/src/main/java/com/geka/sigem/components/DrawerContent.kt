@@ -7,6 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Logout
@@ -22,7 +23,8 @@ fun AppDrawer(
     onMarket: () -> Unit,
     onCursos: () -> Unit,   // ← Nuevo callback
     onSolicitudes: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onProfile: () -> Unit
 ) {
     ModalDrawerSheet {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
@@ -64,6 +66,14 @@ fun AppDrawer(
                 icon = { Icon(Icons.Default.CalendarToday, "Solicitudes") },
                 selected = false,
                 onClick = { onSolicitudes() },
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+
+            NavigationDrawerItem(
+                label = { Text("Mi perfil") },
+                icon = { Icon(Icons.Default.AccountCircle, "Mi perfil") },
+                selected = false,
+                onClick = { onProfile() },
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }

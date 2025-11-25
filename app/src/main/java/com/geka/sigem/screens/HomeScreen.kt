@@ -17,7 +17,8 @@ fun HomeScreen(
     onNavigateToSolicitudes: () -> Unit,
     onNavigateToMarket: () -> Unit,
     onNavigateToCursos: () -> Unit,     // ← agregado
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onProfile: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -40,6 +41,10 @@ fun HomeScreen(
                 },
                 onSolicitudes = {
                     onNavigateToSolicitudes()
+                    scope.launch { drawerState.close() }
+                },
+                onProfile = {
+                    onProfile()
                     scope.launch { drawerState.close() }
                 }
             )

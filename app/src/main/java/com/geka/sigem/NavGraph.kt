@@ -10,7 +10,6 @@ import androidx.navigation.compose.rememberNavController
 import com.geka.sigem.screens.*
 import com.geka.sigem.ui.viewmodel.AuthViewModel
 import com.geka.sigem.Screen
-import com.geka.sigem.screens.CrearSolicitudScreen
 
 @Composable
 fun AppNavHost(authViewModel: AuthViewModel) {
@@ -19,11 +18,9 @@ fun AppNavHost(authViewModel: AuthViewModel) {
 
     // Flujo del login
     val loginResponse by authViewModel.loginState.collectAsState()
-
-    // Estado de sesión
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
-    // Si null → aún cargando
+    // Evita parpadeo mientras carga
     if (isLoggedIn == null) return
 
     val startDestination =
@@ -55,30 +52,14 @@ fun AppNavHost(authViewModel: AuthViewModel) {
         // -------------------------------
         composable(Screen.Home.route) {
             HomeScreen(
-                onNavigateToSolicitudes = {
-                    navController.navigate(Screen.Solicitudes.route)
-                },
-                onNavigateToMarket = {
-                    navController.navigate(Screen.Market.route)
-                },
-                onNavigateToCursos = {
-                    navController.navigate(Screen.Cursos.route)
-                },
-                onLogout = {
-                    authViewModel.logout {
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(Screen.Home.route) { inclusive = true }
-                        }
-                    }
-                }
-            )
-        }
-
-        composable(Screen.Home.route) {
-            HomeScreen(
                 onNavigateToSolicitudes = { navController.navigate(Screen.Solicitudes.route) },
                 onNavigateToMarket = { navController.navigate(Screen.Market.route) },
                 onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
+
+                onProfile = {
+                    navController.navigate(Screen.ChangeCredentials.route)
+                },
+
                 onLogout = {
                     authViewModel.logout {
                         navController.navigate(Screen.Login.route) {
@@ -88,7 +69,6 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 }
             )
         }
-
 
         // -------------------------------
         // MARKET
@@ -97,12 +77,12 @@ fun AppNavHost(authViewModel: AuthViewModel) {
             MarketScreen(onBack = { navController.popBackStack() })
         }
 
-        //--------------------------------
+        // -------------------------------
         // SOLICITUDES
-        //--------------------------------
-
+        // -------------------------------
         composable(Screen.Solicitudes.route) {
             val id = authViewModel.idEmpleado
+
             if (id == null) {
                 LaunchedEffect(Unit) {
                     navController.navigate(Screen.Login.route) {
@@ -111,9 +91,10 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 }
             } else {
                 SolicitudesScreen(
-                    idEmpleado = authViewModel.idEmpleado!!,
+                    idEmpleado = id,
                     onNavigateToMarket = { navController.navigate(Screen.Market.route) },
                     onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
+                    onProfile = { navController.navigate(Screen.ChangeCredentials.route) },
                     onLogout = {
                         authViewModel.logout {
                             navController.navigate(Screen.Login.route) {
@@ -128,13 +109,25 @@ fun AppNavHost(authViewModel: AuthViewModel) {
             }
         }
 
+        // -------------------------------
+        // CREAR SOLICITUD
+        // -------------------------------
         composable(Screen.CrearSolicitud.route) {
-
             val loginState by authViewModel.loginState.collectAsState()
 
             CrearSolicitudScreen(
                 idEmpleado = loginState?.idEmpleado ?: 0,
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        // -------------------------------
+        // CHANGE CREDENTIALS
+        // -------------------------------
+        composable(Screen.ChangeCredentials.route) {
+            ChangeCredentialsScreen(
+                authViewModel = authViewModel,
+                onSuccess = { navController.popBackStack() }
             )
         }
 
@@ -150,7 +143,7 @@ fun AppNavHost(authViewModel: AuthViewModel) {
         }
 
         // -------------------------------
-        // DETALLE CURSO
+        // CURSO DETALLE
         // -------------------------------
         composable("cursoDetalle/{idCurso}") { backStackEntry ->
             val idCurso = backStackEntry.arguments?.getString("idCurso")!!.toInt()

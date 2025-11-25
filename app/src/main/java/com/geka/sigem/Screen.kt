@@ -11,5 +11,7 @@ sealed class Screen(val route: String) {
 
     object CrearSolicitud : Screen("crear_solicitud")
 
+    object ChangeCredentials : Screen("change_credentials")
+
 
 }

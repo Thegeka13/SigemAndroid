@@ -28,6 +28,7 @@ fun SolicitudesScreen(
     onLogout: () -> Unit,
     idEmpleado: Int,
     onCrearSolicitud: () -> Unit,
+    onProfile: () -> Unit,
     viewModel: SolicitudViewModel = viewModel()
 ) {
     val solicitudes by viewModel.solicitudes.collectAsState()
@@ -51,6 +52,10 @@ fun SolicitudesScreen(
                     scope.launch { drawerState.close() }
                 },
                 onSolicitudes = {
+                    scope.launch { drawerState.close() }
+                },
+                onProfile = {
+                    onProfile()
                     scope.launch { drawerState.close() }
                 }
             )
