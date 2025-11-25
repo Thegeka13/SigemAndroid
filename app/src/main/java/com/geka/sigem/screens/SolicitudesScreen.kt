@@ -23,7 +23,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SolicitudesScreen(
-    onNavigateToSolicitudes: () -> Unit,
     onNavigateToMarket: () -> Unit,
     onNavigateToCursos: () -> Unit,
     onLogout: () -> Unit,
@@ -43,7 +42,7 @@ fun SolicitudesScreen(
                     onNavigateToMarket()
                     scope.launch { drawerState.close() }
                 },
-                onCursos = {                 // ← agregado
+                onCursos = {
                     onNavigateToCursos()
                     scope.launch { drawerState.close() }
                 },
@@ -56,7 +55,7 @@ fun SolicitudesScreen(
                 }
             )
         }
-    ){
+    ) {
         LaunchedEffect(Unit) {
             viewModel.cargarSolicitudes(idEmpleado)
         }
@@ -87,132 +86,136 @@ fun SolicitudesScreen(
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-
-                Button(
-                    onClick = onCrearSolicitud,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2563EB)
-                    ),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Crear",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Nueva Solicitud",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Lista de solicitudes
-            if (solicitudes.isEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.White
-                    ),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 1.dp
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(40.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+            // Lista de solicitudes con peso para ocupar espacio disponible
+            Box(modifier = Modifier.weight(1f)) {
+                if (solicitudes.isEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        ),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 1.dp
+                        )
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = Color(0xFFE0E0E0)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "No hay solicitudes",
-                            fontSize = 16.sp,
-                            color = Color(0xFF6B7280)
-                        )
-                    }
-                }
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(solicitudes) { solicitud ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color.White
-                            ),
-                            elevation = CardDefaults.cardElevation(
-                                defaultElevation = 1.dp
-                            )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(40.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.DateRange,
-                                    contentDescription = null,
-                                    tint = Color(0xFF2563EB),
-                                    modifier = Modifier.size(24.dp)
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp),
+                                tint = Color(0xFFE0E0E0)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No hay solicitudes",
+                                fontSize = 16.sp,
+                                color = Color(0xFF6B7280)
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(solicitudes) { solicitud ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color.White
+                                ),
+                                elevation = CardDefaults.cardElevation(
+                                    defaultElevation = 1.dp
                                 )
-
-                                Spacer(modifier = Modifier.width(16.dp))
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "${solicitud.fechaInicio} - ${solicitud.fechaFin}",
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF1A1A1A)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(20.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.DateRange,
+                                        contentDescription = null,
+                                        tint = Color(0xFF2563EB),
+                                        modifier = Modifier.size(24.dp)
                                     )
 
-                                    Text(
-                                        text = "Solicitud de vacaciones",
-                                        fontSize = 14.sp,
-                                        color = Color(0xFF6B7280),
-                                        modifier = Modifier.padding(top = 4.dp)
-                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
 
-                                    if (!solicitud.comentarioAdministrador.isNullOrEmpty()) {
+                                    Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = solicitud.comentarioAdministrador!!,
-                                            fontSize = 13.sp,
+                                            text = "${solicitud.fechaInicio} - ${solicitud.fechaFin}",
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color(0xFF1A1A1A)
+                                        )
+
+                                        Text(
+                                            text = "Solicitud de vacaciones",
+                                            fontSize = 14.sp,
                                             color = Color(0xFF6B7280),
-                                            modifier = Modifier.padding(top = 6.dp)
+                                            modifier = Modifier.padding(top = 4.dp)
+                                        )
+
+                                        if (!solicitud.comentarioAdministrador.isNullOrEmpty()) {
+                                            Text(
+                                                text = solicitud.comentarioAdministrador!!,
+                                                fontSize = 13.sp,
+                                                color = Color(0xFF6B7280),
+                                                modifier = Modifier.padding(top = 6.dp)
+                                            )
+                                        }
+
+                                        Text(
+                                            text = solicitud.estado,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.Black,
+                                            modifier = Modifier.padding(top = 8.dp)
                                         )
                                     }
-
-                                    Text(
-                                        text = solicitud.estado,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.Black,
-                                        modifier = Modifier.padding(top = 8.dp)
-                                    )
                                 }
                             }
                         }
                     }
                 }
+            }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Botón siempre visible
+            Button(
+                onClick = onCrearSolicitud,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2563EB)
+                ),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Crear",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Nueva Solicitud",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
-
     }
 }

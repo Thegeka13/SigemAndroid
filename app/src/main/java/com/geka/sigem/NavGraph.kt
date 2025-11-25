@@ -112,7 +112,6 @@ fun AppNavHost(authViewModel: AuthViewModel) {
             } else {
                 SolicitudesScreen(
                     idEmpleado = authViewModel.idEmpleado!!,
-                    onNavigateToSolicitudes = { },
                     onNavigateToMarket = { navController.navigate(Screen.Market.route) },
                     onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
                     onLogout = {
