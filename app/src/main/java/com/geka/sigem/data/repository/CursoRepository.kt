@@ -14,4 +14,8 @@ class CursoRepository {
 
     suspend fun inscribir(inscritoRequest: InscritoRequest): Response<Any> =
         api.inscribir(inscritoRequest)
+
+    suspend fun getCursosInscrito(idUsuario: Int): List<Curso> =
+        api.getCursosInscrito(idUsuario)
+
 }

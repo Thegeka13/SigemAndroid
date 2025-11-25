@@ -6,8 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.*
@@ -19,23 +17,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.geka.sigem.components.AppDrawer
 import com.geka.sigem.data.models.Curso
 import com.geka.sigem.ui.viewmodel.CursosViewModel
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CursosScreen(
     onVerCurso: (Int) -> Unit,
+    onMisCursos: () -> Unit,
     onMarket: () -> Unit,
     onCursos: () -> Unit,
     onLogout: () -> Unit,
     viewModel: CursosViewModel = viewModel()
 ) {
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
     val cursos by viewModel.cursos.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val message by viewModel.message.collectAsState()
@@ -68,84 +61,66 @@ fun CursosScreen(
             )
         }
     ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Cursos") },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch { drawerState.open() }
-                        }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                    }
-                )
-            }
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
 
-                HeaderCursos()
+        HeaderCursos(onMisCursos)
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    when {
-                        loading -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = androidx.compose.ui.Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
 
-                        cursos.isEmpty() -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = androidx.compose.ui.Alignment.Center
-                            ) {
-                                Text("No hay cursos disponibles")
-                            }
-                        }
-
-                        else -> {
-                            LazyColumn(
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
-                                contentPadding = PaddingValues(bottom = 16.dp)
-                            ) {
-                                items(cursos) { curso ->
-                                    CursoRow(
-                                        curso = curso,
-                                        onVerCurso = onVerCurso
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    message?.let {
-                        Text(
-                            text = it,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier
-                                .align(androidx.compose.ui.Alignment.TopCenter)
-                                .padding(8.dp)
-                        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
+            when {
+                loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = androidx.compose.ui.Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
                 }
+
+                cursos.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = androidx.compose.ui.Alignment.Center
+                    ) {
+                        Text("No hay cursos disponibles")
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 16.dp)
+                    ) {
+                        items(cursos) { curso ->
+                            CursoRow(
+                                curso = curso,
+                                onVerCurso = onVerCurso
+                            )
+                        }
+                    }
+                }
+            }
+
+            message?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier
+                        .align(androidx.compose.ui.Alignment.TopCenter)
+                        .padding(8.dp)
+                )
             }
         }
     }
 }
 
 @Composable
-private fun HeaderCursos() {
+private fun HeaderCursos(
+    onMisCursos: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -173,9 +148,20 @@ private fun HeaderCursos() {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
             )
+
+            Button(
+                onClick = { onMisCursos() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Mis cursos")
+            }
         }
     }
 }
+
 
 @Composable
 fun CursoRow(
@@ -211,7 +197,6 @@ fun CursoRow(
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-
 
             InfoRow(
                 icon = Icons.Default.People,
