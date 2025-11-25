@@ -224,7 +224,23 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 // -------------------
                 composable(Screen.Cursos.route) {
                     CursosScreen(
-                        onVerCurso = { idCurso -> navController.navigate("cursoDetalle/$idCurso") }
+                        onVerCurso = { idCurso ->
+                            navController.navigate("cursoDetalle/$idCurso")
+                        },
+                        onMarket = {
+                            navController.navigate(Screen.Market.route)
+                        },
+                        onCursos = {
+                            // Ya estás dentro de Cursos, pero lo dejamos por si lo usas
+                            navController.navigate(Screen.Cursos.route)
+                        },
+                        onLogout = {
+                            authViewModel.logout {
+                                navController.navigate(Screen.Login.route) {
+                                    popUpTo(Screen.Home.route) { inclusive = true }
+                                }
+                            }
+                        }
                     )
                 }
 
