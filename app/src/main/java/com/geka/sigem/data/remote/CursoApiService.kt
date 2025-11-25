@@ -15,6 +15,7 @@ interface CursoApiService {
     @GET("curso/{idCurso}")
     suspend fun getCurso(@Path("idCurso") id: Int): Curso
 
-    @POST("inscrito")
+    @POST("inscrito/inscribir")
     suspend fun inscribir(@Body body: InscritoRequest): Response<Any>
+
 }
