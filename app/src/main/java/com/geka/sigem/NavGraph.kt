@@ -1,3 +1,4 @@
+// AppNavHost.kt
 package com.geka.sigem
 
 import androidx.compose.runtime.Composable
@@ -21,7 +22,6 @@ import com.geka.sigem.components.AppDrawer
 import com.geka.sigem.screens.*
 import com.geka.sigem.ui.viewmodel.AuthViewModel
 import com.geka.sigem.Screen
-import com.geka.sigem.screens.CrearSolicitudScreen
 import com.geka.sigem.viewmodel.EventoViewModel
 import com.geka.sigem.viewmodel.MarketplaceViewModel
 import kotlinx.coroutines.launch
@@ -34,24 +34,21 @@ fun AppNavHost(authViewModel: AuthViewModel) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Estados de autenticación
     val loginResponse by authViewModel.loginState.collectAsState()
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val realUserId = authViewModel.getUsuarioId()
 
-    // Detectar ruta actual para cambiar el Título y mostrar/ocultar el menú
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // Lógica para saber si debemos mostrar la Navbar (No mostrar en Login)
     val showBars = currentRoute != Screen.Login.route && isLoggedIn == true
 
-    // Título dinámico según la pantalla
     val tituloApp = when {
         currentRoute == Screen.Home.route -> "Inicio"
         currentRoute?.startsWith("market") == true -> "Marketplace"
         currentRoute == Screen.Solicitudes.route -> "Solicitudes"
         currentRoute == Screen.Cursos.route -> "Cursos"
+        currentRoute == Screen.Eventos.route -> "Eventos"
         else -> "Sigem App"
     }
 
@@ -59,10 +56,9 @@ fun AppNavHost(authViewModel: AuthViewModel) {
 
     val startDestination = if (isLoggedIn == true) Screen.Home.route else Screen.Login.route
 
-    // --- ESTRUCTURA GLOBAL: DRAWER -> SCAFFOLD -> NAVHOST ---
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = showBars, // Deshabilita el gesto en el Login
+        gesturesEnabled = showBars,
         drawerContent = {
             if (showBars) {
                 AppDrawer(
@@ -78,7 +74,7 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         navController.navigate(Screen.Solicitudes.route) { launchSingleTop = true }
                         scope.launch { drawerState.close() }
                     },
-                    onEventos = {                  // ← AQUÍ LO AGREGAS
+                    onEventos = {
                         navController.navigate(Screen.Eventos.route) { launchSingleTop = true }
                         scope.launch { drawerState.close() }
                     },
@@ -109,16 +105,13 @@ fun AppNavHost(authViewModel: AuthViewModel) {
             }
         ) { innerPadding ->
 
-            // AQUÍ OCURRE LA MAGIA: EL CONTENIDO CAMBIA, EL MENÚ SE QUEDA
             NavHost(
                 navController = navController,
                 startDestination = startDestination,
                 modifier = Modifier.padding(innerPadding)
             ) {
 
-                // -------------------
-                // LOGIN (Sin menú, gestionado por showBars = false)
-                // -------------------
+                // LOGIN
                 composable(Screen.Login.route) {
                     LaunchedEffect(loginResponse) {
                         if (loginResponse != null) {
@@ -132,119 +125,122 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
-                // -------------------
-                // HOME (Ahora está limpia, ya no recibe callbacks de menú)
-                // -------------------
+                // HOME
                 composable(Screen.Home.route) {
-                    // Nota: Asegúrate de quitar los parámetros del menú en tu archivo HomeScreen
-                    // para que coincida con esta llamada simple.
                     HomeScreen(
                         onNavigateToSolicitudes = { navController.navigate(Screen.Solicitudes.route) },
                         onNavigateToMarket = { navController.navigate(Screen.Market.route) },
                         onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
-                        onLogout = { /* Logout manejado globalmente arriba, pero si tu Home lo pide: */ }
+                        onLogout = {}
                     )
                 }
 
-                // -------------------
-                // MARKETPLACE: LISTA
-                // -------------------
+                // MARKET
                 composable(Screen.Market.route) {
-                    val marketplaceViewModel: MarketplaceViewModel = hiltViewModel()
+                    val vm: MarketplaceViewModel = hiltViewModel()
                     MarketplaceScreen(
-                        viewModel = marketplaceViewModel,
+                        viewModel = vm,
                         idUsuario = realUserId,
                         isMyPosts = false,
                         onOpenDetail = { id -> navController.navigate("market/detail/$id") },
                         onOpenUpload = { navController.navigate(Screen.MarketNewPost.route) },
-                        onOpenMarket = { /* Ya estamos aquí */ },
+                        onOpenMarket = {},
                         onOpenMyPosts = { navController.navigate(Screen.MarketMyPosts.route) }
                     )
                 }
 
-                // -------------------
-                // MARKETPLACE: MIS POSTS
-                // -------------------
                 composable(Screen.MarketMyPosts.route) {
-                    val marketplaceViewModel: MarketplaceViewModel = hiltViewModel()
+                    val vm: MarketplaceViewModel = hiltViewModel()
                     MarketplaceScreen(
-                        viewModel = marketplaceViewModel,
+                        viewModel = vm,
                         idUsuario = realUserId,
                         isMyPosts = true,
                         onOpenDetail = { id -> navController.navigate("market/detail/$id") },
                         onOpenUpload = { navController.navigate(Screen.MarketNewPost.route) },
-                        onOpenMarket = { navController.navigate(Screen.Market.route) { popUpTo(Screen.Market.route) { inclusive = true } } },
-                        onOpenMyPosts = { /* Ya estamos aquí */ },
+                        onOpenMarket = {
+                            navController.navigate(Screen.Market.route) {
+                                popUpTo(Screen.Market.route) { inclusive = true }
+                            }
+                        },
+                        onOpenMyPosts = {}
                     )
                 }
 
-                // -------------------
-                // MARKETPLACE: NUEVA PUBLICACIÓN
-                // -------------------
                 composable(Screen.MarketNewPost.route) {
-                    val marketplaceViewModel: MarketplaceViewModel = hiltViewModel()
+                    val vm: MarketplaceViewModel = hiltViewModel()
                     MarketplaceUploadScreen(
-                        viewModel = marketplaceViewModel,
+                        viewModel = vm,
                         onBack = { navController.popBackStack() }
                     )
                 }
 
-                // -------------------
-                // MARKETPLACE: DETALLE
-                // -------------------
-                composable("market/detail/{id}") { backStackEntry ->
-                    val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: run {
-                        navController.popBackStack()
-                        return@composable
-                    }
-                    val marketplaceViewModel: MarketplaceViewModel = hiltViewModel()
+                composable("market/detail/{id}") { back ->
+                    val id = back.arguments?.getString("id")?.toIntOrNull() ?: return@composable
+                    val vm: MarketplaceViewModel = hiltViewModel()
                     MarketplaceDetailScreen(
                         idPublicacion = id,
-                        viewModel = marketplaceViewModel,
+                        viewModel = vm,
                         authViewModel = authViewModel,
                         onBack = { navController.popBackStack() },
-                        onEdit = { editId -> navController.navigate("market/edit/$editId") }
+                        onEdit = { eid -> navController.navigate("market/edit/$eid") }
                     )
                 }
 
-                // -------------------
-                // MARKETPLACE: EDITAR
-                // -------------------
                 composable(
-                    route = "market/edit/{id}",
+                    "market/edit/{id}",
                     arguments = listOf(navArgument("id") { type = NavType.IntType })
-                ) { backStackEntry ->
-                    val id = backStackEntry.arguments?.getInt("id") ?: return@composable
-                    val marketplaceViewModel: MarketplaceViewModel = hiltViewModel()
+                ) { back ->
+                    val id = back.arguments?.getInt("id") ?: return@composable
+                    val vm: MarketplaceViewModel = hiltViewModel()
                     MarketplaceEditScreen(
                         idPublicacion = id,
-                        viewModel = marketplaceViewModel,
+                        viewModel = vm,
                         onBack = { navController.popBackStack() }
                     )
                 }
 
-                // -------------------
                 // SOLICITUDES
-                // -------------------
                 composable(Screen.Solicitudes.route) {
-                    SolicitudesScreen(idEmpleado = realUserId)
+                    if (realUserId == null) {
+                        LaunchedEffect(Unit) {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(0)
+                            }
+                        }
+                    } else {
+                        SolicitudesScreen(
+                            idEmpleado = realUserId,
+                            onNavigateToMarket = { navController.navigate(Screen.Market.route) },
+                            onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
+                            onEventos = { navController.navigate(Screen.Eventos.route) },  // ← FALTABA
+                            onLogout = {
+                                authViewModel.logout {
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Home.route) { inclusive = true }
+                                    }
+                                }
+                            },
+                            onCrearSolicitud = {
+                                navController.navigate(Screen.CrearSolicitud.route)
+                            }
+                        )
+                    }
                 }
 
-                // -------------------
+                composable(Screen.CrearSolicitud.route) {
+                    CrearSolicitudScreen(
+                        idEmpleado = realUserId ?: 0,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
                 // CURSOS
-                // -------------------
                 composable(Screen.Cursos.route) {
                     CursosScreen(
-                        onVerCurso = { idCurso ->
-                            navController.navigate("cursoDetalle/$idCurso")
-                        },
-                        onMarket = {
-                            navController.navigate(Screen.Market.route)
-                        },
-                        onCursos = {
-                            // Ya estás dentro de Cursos, pero lo dejamos por si lo usas
-                            navController.navigate(Screen.Cursos.route)
-                        },
+                        onVerCurso = { idCurso -> navController.navigate("cursoDetalle/$idCurso") },
+                        onMarket = { navController.navigate(Screen.Market.route) },
+                        onCursos = { navController.navigate(Screen.Cursos.route) },
+                        onEventos = { navController.navigate(Screen.Eventos.route) },  // ← FALTABA
                         onLogout = {
                             authViewModel.logout {
                                 navController.navigate(Screen.Login.route) {
@@ -252,41 +248,10 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                                 }
                             }
                         },
-                        onMisCursos = {
-                            navController.navigate(Screen.MisCursos.route)
-                        },
+                        onMisCursos = { navController.navigate(Screen.MisCursos.route) }
                     )
                 }
 
-        composable(Screen.Solicitudes.route) {
-            val id = authViewModel.idEmpleado
-            if (id == null) {
-                LaunchedEffect(Unit) {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0)
-                    }
-                }
-            } else {
-                SolicitudesScreen(
-                    idEmpleado = authViewModel.idEmpleado!!,
-                    onNavigateToMarket = { navController.navigate(Screen.Market.route) },
-                    onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
-                    onLogout = {
-                        authViewModel.logout {
-                            navController.navigate(Screen.Login.route) {
-                                popUpTo(Screen.Home.route) { inclusive = true }
-                            }
-                        }
-                    },
-                    onCrearSolicitud = {
-                        navController.navigate(Screen.CrearSolicitud.route)
-                    }
-                )
-            }
-        }
-                // -------------------
-                // MIS CURSOS
-                // -------------------
                 composable(Screen.MisCursos.route) {
                     MisCursosScreen(
                         idUsuario = realUserId,
@@ -294,24 +259,8 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
-        composable(Screen.CrearSolicitud.route) {
-
-            val loginState by authViewModel.loginState.collectAsState()
-
-            CrearSolicitudScreen(
-                idEmpleado = loginState?.idEmpleado ?: 0,
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-                // -------------------
-                // DETALLE CURSO
-                // -------------------
-                composable("cursoDetalle/{idCurso}") { backStackEntry ->
-                    val idCurso = backStackEntry.arguments?.getString("idCurso")?.toIntOrNull() ?: run {
-                        navController.popBackStack()
-                        return@composable
-                    }
+                composable("cursoDetalle/{idCurso}") { back ->
+                    val idCurso = back.arguments?.getString("idCurso")?.toIntOrNull() ?: return@composable
                     CursoDetalleScreen(
                         idCurso = idCurso,
                         idUsuario = realUserId,
@@ -319,23 +268,20 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
-                // EVENTOS - LISTA
+                // EVENTOS
                 composable(Screen.Eventos.route) {
                     val vm: EventoViewModel = hiltViewModel()
                     EventosScreen(
                         viewModel = vm,
-                        onOpenDetail = { id ->
-                            navController.navigate("eventos/detalle/$id")
-                        }
+                        onOpenDetail = { id -> navController.navigate("eventos/detalle/$id") }
                     )
                 }
 
-                // EVENTO DETALLE
                 composable(
-                    route = "eventos/detalle/{idEvento}",
+                    "eventos/detalle/{idEvento}",
                     arguments = listOf(navArgument("idEvento") { type = NavType.IntType })
-                ) { backStackEntry ->
-                    val idEvento = backStackEntry.arguments?.getInt("idEvento") ?: return@composable
+                ) { back ->
+                    val idEvento = back.arguments?.getInt("idEvento") ?: return@composable
                     val vm: EventoViewModel = hiltViewModel()
                     EventoDetalleScreen(
                         idEvento = idEvento,
@@ -343,7 +289,6 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         onBack = { navController.popBackStack() }
                     )
                 }
-
             }
         }
     }

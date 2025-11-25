@@ -18,15 +18,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.geka.sigem.components.AppDrawer
+import com.geka.sigem.data.models.Evento
 import com.geka.sigem.ui.viewmodel.SolicitudViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun SolicitudesScreen(
+    idEmpleado: Int,                     // recomendado al inicio
     onNavigateToMarket: () -> Unit,
     onNavigateToCursos: () -> Unit,
+    onEventos: () -> Unit,               // este parámetro SÍ debe existir
     onLogout: () -> Unit,
-    idEmpleado: Int,
     onCrearSolicitud: () -> Unit,
     viewModel: SolicitudViewModel = viewModel()
 ) {
@@ -46,11 +48,15 @@ fun SolicitudesScreen(
                     onNavigateToCursos()
                     scope.launch { drawerState.close() }
                 },
-                onLogout = {
-                    onLogout()
+                onSolicitudes = {
                     scope.launch { drawerState.close() }
                 },
-                onSolicitudes = {
+                onEventos = {
+                    onEventos()                      // CORREGIDO
+                    scope.launch { drawerState.close() }
+                },
+                onLogout = {
+                    onLogout()
                     scope.launch { drawerState.close() }
                 }
             )
@@ -66,7 +72,6 @@ fun SolicitudesScreen(
                 .background(Color(0xFFF5F5F5))
                 .padding(24.dp)
         ) {
-            // Encabezado
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -90,8 +95,8 @@ fun SolicitudesScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Lista de solicitudes con peso para ocupar espacio disponible
             Box(modifier = Modifier.weight(1f)) {
+
                 if (solicitudes.isEmpty()) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -99,9 +104,7 @@ fun SolicitudesScreen(
                         colors = CardDefaults.cardColors(
                             containerColor = Color.White
                         ),
-                        elevation = CardDefaults.cardElevation(
-                            defaultElevation = 1.dp
-                        )
+                        elevation = CardDefaults.cardElevation(1.dp)
                     ) {
                         Column(
                             modifier = Modifier
@@ -124,19 +127,13 @@ fun SolicitudesScreen(
                         }
                     }
                 } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         items(solicitudes) { solicitud ->
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(8.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color.White
-                                ),
-                                elevation = CardDefaults.cardElevation(
-                                    defaultElevation = 1.dp
-                                )
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(1.dp)
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -194,13 +191,10 @@ fun SolicitudesScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón siempre visible
             Button(
                 onClick = onCrearSolicitud,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF2563EB)
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
             ) {
