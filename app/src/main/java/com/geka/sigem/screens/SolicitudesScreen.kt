@@ -50,9 +50,8 @@ fun SolicitudesScreen(
                     onLogout()
                     scope.launch { drawerState.close() }
                 },
-                onSolicitudes = {
-                    scope.launch { drawerState.close() }
-                }
+                onSolicitudes = { scope.launch { drawerState.close() } },
+                onEventos = { scope.launch { drawerState.close() } }
             )
         }
     ) {

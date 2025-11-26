@@ -32,10 +32,6 @@ sealed class Screen(val route: String) {
     // SOLICITUDES
     // ----------------------
     object Solicitudes : Screen("solicitudes")
-
-
-    object Solicitudes : Screen("solicitudes")
-
     object CrearSolicitud : Screen("crear_solicitud")
 
     object Eventos : Screen("eventos")

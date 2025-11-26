@@ -25,6 +25,7 @@ import com.geka.sigem.screens.CrearSolicitudScreen
 import com.geka.sigem.viewmodel.EventoViewModel
 import com.geka.sigem.viewmodel.MarketplaceViewModel
 import kotlinx.coroutines.launch
+import com.geka.sigem.data.models.LoginResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +46,8 @@ fun AppNavHost(authViewModel: AuthViewModel) {
 
     // Lógica para saber si debemos mostrar la Navbar (No mostrar en Login)
     val showBars = currentRoute != Screen.Login.route && isLoggedIn == true
+    val loginError by authViewModel.loginError.collectAsState()
+
 
     // Título dinámico según la pantalla
     val tituloApp = when {
@@ -120,17 +123,29 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 // LOGIN (Sin menú, gestionado por showBars = false)
                 // -------------------
                 composable(Screen.Login.route) {
-                    LaunchedEffect(loginResponse) {
-                        if (loginResponse != null) {
+
+                    // Observamos el state del ViewModel
+                    val loginResponse by authViewModel.loginState.collectAsState()
+                    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+
+                    // Si el login fue exitoso → navegar al Home
+                    LaunchedEffect(isLoggedIn) {
+                        if (isLoggedIn == true && loginResponse != null) {
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.Login.route) { inclusive = true }
                             }
                         }
                     }
+
+                    // Pantalla de Login
                     LoginScreen(
+                        errorMessage = loginError,
                         onLogin = { usuario, pass -> authViewModel.login(usuario, pass) }
+
                     )
+
                 }
+
 
                 // -------------------
                 // HOME (Ahora está limpia, ya no recibe callbacks de menú)
@@ -222,14 +237,6 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         onBack = { navController.popBackStack() }
                     )
                 }
-
-                // -------------------
-                // SOLICITUDES
-                // -------------------
-                composable(Screen.Solicitudes.route) {
-                    SolicitudesScreen(idEmpleado = realUserId)
-                }
-
                 // -------------------
                 // CURSOS
                 // -------------------
@@ -258,32 +265,36 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
-        composable(Screen.Solicitudes.route) {
-            val id = authViewModel.idEmpleado
-            if (id == null) {
-                LaunchedEffect(Unit) {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0)
-                    }
-                }
-            } else {
-                SolicitudesScreen(
-                    idEmpleado = authViewModel.idEmpleado!!,
-                    onNavigateToMarket = { navController.navigate(Screen.Market.route) },
-                    onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
-                    onLogout = {
-                        authViewModel.logout {
+                composable(Screen.Solicitudes.route) {
+
+                    val idEmpleado = authViewModel.getEmpleadoId()   // ✔ AHORA SÍ EL ID CORRECTO
+
+                    if (idEmpleado == -1) {     // No hay sesión
+                        LaunchedEffect(Unit) {
                             navController.navigate(Screen.Login.route) {
-                                popUpTo(Screen.Home.route) { inclusive = true }
+                                popUpTo(0)
                             }
                         }
-                    },
-                    onCrearSolicitud = {
-                        navController.navigate(Screen.CrearSolicitud.route)
+                    } else {
+                        SolicitudesScreen(
+                            idEmpleado = idEmpleado,
+                            onNavigateToMarket = { navController.navigate(Screen.Market.route) },
+                            onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
+                            onLogout = {
+                                authViewModel.logout {
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Home.route) { inclusive = true }
+                                    }
+                                }
+                            },
+                            onCrearSolicitud = {
+                                navController.navigate(Screen.CrearSolicitud.route)
+                            }
+                        )
                     }
-                )
-            }
-        }
+                }
+
+
                 // -------------------
                 // MIS CURSOS
                 // -------------------

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -17,9 +18,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.geka.sigem.components.AppDrawer
 import com.geka.sigem.data.models.Curso
 import com.geka.sigem.ui.viewmodel.CursosViewModel
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CursosScreen(
     onVerCurso: (Int) -> Unit,
@@ -27,8 +31,14 @@ fun CursosScreen(
     onMarket: () -> Unit,
     onCursos: () -> Unit,
     onLogout: () -> Unit,
+    onSolicitudes: () -> Unit = {},
+    onEventos: () -> Unit = {},
     viewModel: CursosViewModel = viewModel()
 ) {
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
     val cursos by viewModel.cursos.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val message by viewModel.message.collectAsState()
@@ -49,69 +59,74 @@ fun CursosScreen(
                     scope.launch { drawerState.close() }
                     onCursos()
                 },
+                onSolicitudes = {
+                    scope.launch { drawerState.close() }
+                    onSolicitudes()
+                },
+                onEventos = {
+                    scope.launch { drawerState.close() }
+                    onEventos()
+                },
                 onLogout = {
                     scope.launch { drawerState.close() }
                     onLogout()
-                }, onSolicitudes = {
-                    scope.launch { drawerState.close() }
-                    onLogout()
-                }, onEventos =  {
-                scope.launch { drawerState.close() }
-            }
+                }
             )
         }
     ) {
 
-        HeaderCursos(onMisCursos)
+        Column {
+            HeaderCursos(onMisCursos)
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-        ) {
-            when {
-                loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = androidx.compose.ui.Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+                when {
+                    loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
-                }
 
-                cursos.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = androidx.compose.ui.Alignment.Center
-                    ) {
-                        Text("No hay cursos disponibles")
+                    cursos.isEmpty() -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No hay cursos disponibles")
+                        }
                     }
-                }
 
-                else -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
-                    ) {
-                        items(cursos) { curso ->
-                            CursoRow(
-                                curso = curso,
-                                onVerCurso = onVerCurso
-                            )
+                    else -> {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(bottom = 16.dp)
+                        ) {
+                            items(cursos) { curso ->
+                                CursoRow(
+                                    curso = curso,
+                                    onVerCurso = onVerCurso
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            message?.let {
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .align(androidx.compose.ui.Alignment.TopCenter)
-                        .padding(8.dp)
-                )
+                message?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(8.dp)
+                    )
+                }
             }
         }
     }
@@ -162,7 +177,6 @@ private fun HeaderCursos(
     }
 }
 
-
 @Composable
 fun CursoRow(
     curso: Curso,
@@ -178,8 +192,7 @@ fun CursoRow(
         )
     ) {
         Column(
-            modifier = Modifier
-                .padding(16.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Text(
                 text = curso.nombre,
@@ -190,7 +203,7 @@ fun CursoRow(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            InfoRow(
+            CursoInfoRow(
                 icon = Icons.Default.School,
                 label = "Institución",
                 value = curso.institucion
@@ -198,7 +211,7 @@ fun CursoRow(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            InfoRow(
+            CursoInfoRow(
                 icon = Icons.Default.People,
                 label = "Inscritos",
                 value = "${curso.alumnosInscritos}/${curso.capacidadMaxima}"
