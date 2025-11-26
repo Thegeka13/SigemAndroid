@@ -22,7 +22,6 @@ class AuthRepository {
                     "Usuario o contraseña incorrectos"
                 }
             } ?: "Usuario o contraseña incorrectos"
-
             throw Exception(errorMessage)
         } catch (e: Exception) {
             // Otros errores genéricos de red o conversión
