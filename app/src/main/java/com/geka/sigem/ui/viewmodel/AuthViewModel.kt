@@ -15,49 +15,61 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = AuthRepository()
     private val sessionManager = SessionManager(application.applicationContext)
 
+    // Estado del login
     private val _loginState = MutableStateFlow<LoginResponse?>(null)
+    private val _loginAttempted = MutableStateFlow(false)
     val loginState: StateFlow<LoginResponse?> = _loginState
 
+    private val _loginError = MutableStateFlow<String?>(null)
+    val loginError: StateFlow<String?> = _loginError
+
+
+    // Estado de sesión
     private val _isLoggedIn = MutableStateFlow<Boolean?>(false)
     val isLoggedIn: StateFlow<Boolean?> = _isLoggedIn
 
-    // Variable para almacenar idEmpleado
-    private var _idEmpleado: Int? = null
-    val idEmpleado: Int?
-        get() = _idEmpleado
+    // ------------------------------ LOGIN ------------------------------
 
     fun login(usuario: String, contrasenia: String) {
         viewModelScope.launch {
+            _loginError.value = null // limpiar error previo
             try {
                 val response = repository.login(usuario, contrasenia)
-
-                // Guardar idEmpleado en memoria
-                _idEmpleado = response.idEmpleado
-
-                // Guardar idUser de manera persistente
-                response.idUser?.let { id ->
-                    sessionManager.saveUserId(id)
-                }
+                response.idUser?.let { sessionManager.saveUserId(it) }
+                response.idEmpleado?.let { sessionManager.saveEmpleadoId(it) }
 
                 _loginState.value = response
                 _isLoggedIn.value = true
-
             } catch (e: Exception) {
                 _loginState.value = null
                 _isLoggedIn.value = false
+                _loginError.value = e.message // mensaje del backend
             }
         }
     }
+
+
+
+    // --------------------------- OBTENER ID ----------------------------
 
     fun getUsuarioId(): Int {
         return sessionManager.getUserId()
     }
 
+    fun getEmpleadoId(): Int {
+        return sessionManager.getEmpleadoId()
+    }
+
+
+    // ------------------------------ LOGOUT ------------------------------
+
     fun logout(onFinish: () -> Unit) {
         viewModelScope.launch {
             sessionManager.clearSession()
+
             _isLoggedIn.value = false
             _loginState.value = null
+
             onFinish()
         }
     }

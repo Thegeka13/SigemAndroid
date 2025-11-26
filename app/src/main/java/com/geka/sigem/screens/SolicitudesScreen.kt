@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,7 @@ fun SolicitudesScreen(
     onNavigateToCursos: () -> Unit,
     onEventos: () -> Unit,               // este parámetro SÍ debe existir
     onLogout: () -> Unit,
+    onApoyos: () -> Unit,
     onCrearSolicitud: () -> Unit,
     viewModel: SolicitudViewModel = viewModel()
 ) {
@@ -55,6 +57,10 @@ fun SolicitudesScreen(
                     onEventos()                      // CORREGIDO
                     scope.launch { drawerState.close() }
                 },
+                onApoyos = {
+                    onApoyos()                      // CORREGIDO
+                    scope.launch { drawerState.close() }
+                },
                 onLogout = {
                     onLogout()
                     scope.launch { drawerState.close() }
@@ -62,78 +68,64 @@ fun SolicitudesScreen(
             )
         }
     ) {
-        LaunchedEffect(Unit) {
-            viewModel.cargarSolicitudes(idEmpleado)
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
-                .padding(24.dp)
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            HeaderSolicitudes(onCrearSolicitud)
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
-                Column {
-                    Text(
-                        text = "Mis Solicitudes",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF1A1A1A)
-                    )
-                    Text(
-                        text = "Gestión de vacaciones",
-                        fontSize = 14.sp,
-                        color = Color(0xFF6B7280),
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
+                LaunchedEffect(Unit) {
+                    viewModel.cargarSolicitudes(idEmpleado)
                 }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Box(modifier = Modifier.weight(1f)) {
 
                 if (solicitudes.isEmpty()) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.White
-                        ),
-                        elevation = CardDefaults.cardElevation(1.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(40.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = Color(0xFFE0E0E0)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "No hay solicitudes",
-                                fontSize = 16.sp,
-                                color = Color(0xFF6B7280)
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(40.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(48.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "No hay solicitudes",
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
                     }
                 } else {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         items(solicitudes) { solicitud ->
                             Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(1.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp)),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surface
+                                )
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -144,7 +136,7 @@ fun SolicitudesScreen(
                                     Icon(
                                         imageVector = Icons.Default.DateRange,
                                         contentDescription = null,
-                                        tint = Color(0xFF2563EB),
+                                        tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(24.dp)
                                     )
 
@@ -155,13 +147,13 @@ fun SolicitudesScreen(
                                             text = "${solicitud.fechaInicio} - ${solicitud.fechaFin}",
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Medium,
-                                            color = Color(0xFF1A1A1A)
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
 
                                         Text(
                                             text = "Solicitud de vacaciones",
                                             fontSize = 14.sp,
-                                            color = Color(0xFF6B7280),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.padding(top = 4.dp)
                                         )
 
@@ -169,7 +161,7 @@ fun SolicitudesScreen(
                                             Text(
                                                 text = solicitud.comentarioAdministrador!!,
                                                 fontSize = 13.sp,
-                                                color = Color(0xFF6B7280),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 modifier = Modifier.padding(top = 6.dp)
                                             )
                                         }
@@ -178,7 +170,7 @@ fun SolicitudesScreen(
                                             text = solicitud.estado,
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color.Black,
+                                            color = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.padding(top = 8.dp)
                                         )
                                     }
@@ -193,10 +185,14 @@ fun SolicitudesScreen(
 
             Button(
                 onClick = onCrearSolicitud,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .height(45.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -206,10 +202,47 @@ fun SolicitudesScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Nueva Solicitud",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun HeaderSolicitudes(
+    onCrearSolicitud: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary)
+            .padding(vertical = 28.dp, horizontal = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Default.DateRange,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp),
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                "Mis Solicitudes",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 28.sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                "Gestión de vacaciones",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+            )
         }
     }
 }

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun LoginScreen(
+    errorMessage: String? = null,
     onLogin: (String, String) -> Unit
 ) {
     var usuario by remember { mutableStateOf("") }
@@ -36,21 +37,18 @@ fun LoginScreen(
                 .width(400.dp)
                 .padding(24.dp),
             shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 2.dp
-            )
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Título
+
                 Text(
                     text = "Iniciar Sesión",
                     fontSize = 24.sp,
@@ -58,70 +56,47 @@ fun LoginScreen(
                     color = Color(0xFF1A1A1A)
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                // --- ERROR EN CREDENCIALES ---
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage,
+                        color = Color.Red,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
-                // Campo Usuario
                 OutlinedTextField(
                     value = usuario,
                     onValueChange = { usuario = it },
                     label = { Text("Usuario") },
                     leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Usuario"
-                        )
+                        Icon(Icons.Default.Person, contentDescription = "Usuario")
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF2563EB),
-                        unfocusedBorderColor = Color(0xFFE0E0E0)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                // Campo Contraseña
                 OutlinedTextField(
                     value = contrasenia,
                     onValueChange = { contrasenia = it },
                     label = { Text("Contraseña") },
                     leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = "Contraseña"
-                        )
+                        Icon(Icons.Default.Lock, contentDescription = "Contraseña")
                     },
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF2563EB),
-                        unfocusedBorderColor = Color(0xFFE0E0E0)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Botón de login
                 Button(
                     onClick = { onLogin(usuario, contrasenia) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2563EB)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
                 ) {
-                    Text(
-                        text = "Ingresar",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Text("Ingresar", fontSize = 16.sp)
                 }
             }
         }

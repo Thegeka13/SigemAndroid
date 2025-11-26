@@ -42,6 +42,7 @@ fun AppNavHost(authViewModel: AuthViewModel) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val showBars = currentRoute != Screen.Login.route && isLoggedIn == true
+    val loginError by authViewModel.loginError.collectAsState()
 
     val tituloApp = when {
         currentRoute == Screen.Home.route -> "Inicio"
@@ -78,6 +79,10 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         navController.navigate(Screen.Eventos.route) { launchSingleTop = true }
                         scope.launch { drawerState.close() }
                     },
+                    onApoyos = {
+                        navController.navigate(Screen.Apoyos.route) { launchSingleTop = true }
+                        scope.launch { drawerState.close() }
+                    },
                     onLogout = {
                         scope.launch { drawerState.close() }
                         authViewModel.logout {
@@ -111,18 +116,31 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 modifier = Modifier.padding(innerPadding)
             ) {
 
-                // LOGIN
+                // -------------------
+                // LOGIN (Sin menú, gestionado por showBars = false)
+                // -------------------
                 composable(Screen.Login.route) {
-                    LaunchedEffect(loginResponse) {
-                        if (loginResponse != null) {
+
+                    // Observamos el state del ViewModel
+                    val loginResponse by authViewModel.loginState.collectAsState()
+                    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+
+                    // Si el login fue exitoso → navegar al Home
+                    LaunchedEffect(isLoggedIn) {
+                        if (isLoggedIn == true && loginResponse != null) {
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(Screen.Login.route) { inclusive = true }
                             }
                         }
                     }
+
+                    // Pantalla de Login
                     LoginScreen(
+                        errorMessage = loginError,
                         onLogin = { usuario, pass -> authViewModel.login(usuario, pass) }
+
                     )
+
                 }
 
                 // HOME
@@ -199,9 +217,40 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
-                // SOLICITUDES
+
+
+                // -------------------
+                // APOYOS
+                // -------------------
+                composable(Screen.Apoyos.route) {
+                    ApoyosScreen(
+                        onVerApoyo = { idApoyo ->
+                            navController.navigate("apoyoDetalle/$idApoyo")
+                        }
+                    )
+                }
+
+                // -------------------
+                // DETALLE APOYO
+                // -------------------
+                composable("apoyoDetalle/{idApoyo}") { backStackEntry ->
+                    val idApoyo = backStackEntry.arguments?.getString("idApoyo")?.toIntOrNull() ?: run {
+                        navController.popBackStack()
+                        return@composable
+                    }
+
+                    ApoyoDetalleScreen(
+                        idApoyo = idApoyo,
+                        usuarioId = realUserId,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+                //Solicitudes
                 composable(Screen.Solicitudes.route) {
-                    if (realUserId == null) {
+                    val idEmpleado = authViewModel.getEmpleadoId()   // ✔ AHORA SÍ EL ID CORRECTO
+
+                    if (idEmpleado == -1) {     // No hay sesión
                         LaunchedEffect(Unit) {
                             navController.navigate(Screen.Login.route) {
                                 popUpTo(0)
@@ -209,10 +258,11 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         }
                     } else {
                         SolicitudesScreen(
-                            idEmpleado = realUserId,
+                            idEmpleado = idEmpleado,
                             onNavigateToMarket = { navController.navigate(Screen.Market.route) },
                             onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
-                            onEventos = { navController.navigate(Screen.Eventos.route) },  // ← FALTABA
+                            onEventos = { navController.navigate(Screen.Eventos.route) },
+                            onApoyos = { navController.navigate(Screen.Apoyos.route) },
                             onLogout = {
                                 authViewModel.logout {
                                     navController.navigate(Screen.Login.route) {
@@ -226,6 +276,7 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         )
                     }
                 }
+
 
                 composable(Screen.CrearSolicitud.route) {
                     CrearSolicitudScreen(
@@ -241,6 +292,7 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         onMarket = { navController.navigate(Screen.Market.route) },
                         onCursos = { navController.navigate(Screen.Cursos.route) },
                         onEventos = { navController.navigate(Screen.Eventos.route) },  // ← FALTABA
+                        onApoyos = { navController.navigate(Screen.Apoyos.route) },  // ← FALTABA
                         onLogout = {
                             authViewModel.logout {
                                 navController.navigate(Screen.Login.route) {
@@ -255,6 +307,14 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 composable(Screen.MisCursos.route) {
                     MisCursosScreen(
                         idUsuario = realUserId,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.CrearSolicitud.route) {
+                    val loginState by authViewModel.loginState.collectAsState()
+                    CrearSolicitudScreen(
+                        idEmpleado = loginState?.idEmpleado ?: 0,
                         onBack = { navController.popBackStack() }
                     )
                 }
