@@ -3,7 +3,6 @@ package com.geka.sigem.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.geka.sigem.data.models.Apoyo
-import com.geka.sigem.data.remote.ApoyoApiService
 import com.geka.sigem.data.repository.ApoyoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +24,12 @@ class ApoyosViewModel(
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message
 
+    // -------------------------------
+    // NUEVO: Lista de apoyos inscritos
+    // -------------------------------
+    private val _apoyosInscritos = MutableStateFlow<List<Apoyo>>(emptyList())
+    val apoyosInscritos: StateFlow<List<Apoyo>> = _apoyosInscritos
+
 
     // -------------------------
     // Obtener todos los apoyos
@@ -41,6 +46,7 @@ class ApoyosViewModel(
             }
         }
     }
+
 
     // -------------------------
     // Obtener un apoyo específico
@@ -59,6 +65,9 @@ class ApoyosViewModel(
     }
 
 
+    // -------------------------
+    // Inscribir usuario a un apoyo
+    // -------------------------
     fun inscribirEnApoyo(idUsuario: Int, idApoyo: Int) {
         viewModelScope.launch {
             _loading.value = true
@@ -67,14 +76,9 @@ class ApoyosViewModel(
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    val ok = body?.get("ok") as? Boolean ?: false
-                    val msg = body?.get("message") as? String ?: ""
+                    val msg = body?.get("message") as? String ?: "Inscripción exitosa"
 
-                    _message.value = if (ok) {
-                        "Inscripción realizada correctamente"
-                    } else {
-                        msg
-                    }
+                    _message.value = msg
 
                 } else {
                     _message.value = "Error en el servidor"
@@ -87,6 +91,24 @@ class ApoyosViewModel(
             }
         }
     }
+
+
+    // -------------------------------------------------------
+    // NUEVO: Obtener apoyos en los que el usuario está inscrito
+    // -------------------------------------------------------
+    fun loadApoyosInscritos(idUsuario: Int) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                _apoyosInscritos.value = repo.getApoyosInscritos(idUsuario)
+            } catch (e: Exception) {
+                _message.value = "Error al obtener apoyos inscritos: ${e.message}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
 
 
     fun clearMessage() {

@@ -15,13 +15,16 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.geka.sigem.components.AppDrawer
 import com.geka.sigem.screens.*
+import com.geka.sigem.ui.inscritos.ApoyosInscritosScreen
 import com.geka.sigem.ui.viewmodel.AuthViewModel
 import com.geka.sigem.viewmodel.MarketplaceViewModel
 import kotlinx.coroutines.launch
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(authViewModel: AuthViewModel) {
+
 
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -230,9 +233,20 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     ApoyosScreen(
                         onVerApoyo = { idApoyo ->
                             navController.navigate("apoyoDetalle/$idApoyo")
+                        },
+                        onVerMisApoyos = {
+                            navController.navigate(Screen.MisApoyos.route)
                         }
                     )
                 }
+
+                // -------------------
+                // MIS APOYOS INSCRITOS
+                // -------------------
+                composable(Screen.MisApoyos.route) {
+                    ApoyosInscritosScreen(idUsuario = realUserId)
+                }
+
 
                 // -------------------
                 // DETALLE APOYO
