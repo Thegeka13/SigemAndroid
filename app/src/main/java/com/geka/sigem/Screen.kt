@@ -13,6 +13,11 @@ sealed class Screen(val route: String) {
     object Home : Screen("home")
 
     // ----------------------
+    // SPLASH
+    // ----------------------
+    object Splash : Screen("splash")
+
+    // ----------------------
     // MARKETPLACE
     // ----------------------
     object Market : Screen("market")
@@ -24,34 +29,31 @@ sealed class Screen(val route: String) {
     // CURSOS
     // ----------------------
     object Cursos : Screen("cursos")
-    object CursoDetalle : Screen("curso/{id}")
+    object CursoDetalle : Screen("cursoDetalle/{idCurso}")
     object MisCursos : Screen("misCursos")
-
-
 
     // ----------------------
     // APOYOS
     // ----------------------
     object Apoyos : Screen("apoyos")
-    object ApoyoDetalle : Screen("apoyo/{id}")
+    object ApoyoDetalle : Screen("apoyoDetalle/{idApoyo}")
 
     // ----------------------
     // SOLICITUDES
     // ----------------------
     object Solicitudes : Screen("solicitudes")
-
-
     object CrearSolicitud : Screen("crear_solicitud")
-    object ChangeCredentialsScreen: Screen("change_credentials")
+
+    object ChangeCredentialsScreen : Screen("change_credentials")
 
     // ----------------------
     // EVENTOS
     // ----------------------
-
     object Eventos : Screen("eventos")
     object EventoDetalle : Screen("eventos/detalle/{idEvento}")
 
-
+    // ----------------------
+    // IA
+    // ----------------------
     object AiHelpScreen : Screen("ai_help")
-
 }

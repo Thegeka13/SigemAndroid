@@ -34,9 +34,15 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     // ------------------------------ LOGIN ------------------------------
 
+
+    // ------------------------------ SPLASH -----------------------------
+    private val _loginSuccess = MutableStateFlow(false)
+    val loginSuccess: StateFlow<Boolean> = _loginSuccess
+
+
     fun login(usuario: String, contrasenia: String) {
         viewModelScope.launch {
-            _loginError.value = null // limpiar error previo
+            _loginError.value = null
             try {
                 val response = repository.login(usuario, contrasenia)
                 response.idUser?.let { sessionManager.saveUserId(it) }
@@ -44,13 +50,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
                 _loginState.value = response
                 _isLoggedIn.value = true
+                _loginSuccess.value = true  // <--- clave para navegar
+
             } catch (e: Exception) {
                 _loginState.value = null
                 _isLoggedIn.value = false
-                _loginError.value = e.message // mensaje del backend
+                _loginError.value = e.message
+                _loginSuccess.value = false
             }
         }
     }
+
 
 
 

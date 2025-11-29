@@ -3,7 +3,6 @@ package com.geka.sigem
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -13,10 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.geka.sigem.components.AppDrawer
 import com.geka.sigem.screens.*
@@ -36,13 +32,22 @@ fun AppNavHost(authViewModel: AuthViewModel) {
 
     val loginResponse by authViewModel.loginState.collectAsState()
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val loginError by authViewModel.loginError.collectAsState()
+
     val realUserId = authViewModel.getUsuarioId()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val showBars = currentRoute != Screen.Login.route && isLoggedIn == true
-    val loginError by authViewModel.loginError.collectAsState()
+    // CORREGIDO: Splash no tendrá menú
+    val showBars =
+        isLoggedIn == true &&
+                currentRoute != Screen.Login.route &&
+                currentRoute != Screen.Splash.route
+
+    if (isLoggedIn == null) return
+
+    val startDestination = if (isLoggedIn == true) Screen.Home.route else Screen.Login.route
 
     val tituloApp = when {
         currentRoute == Screen.Home.route -> "Inicio"
@@ -54,10 +59,6 @@ fun AppNavHost(authViewModel: AuthViewModel) {
         currentRoute == Screen.AiHelpScreen.route -> "Asistente de Ayuda"
         else -> "Sigem App"
     }
-
-    if (isLoggedIn == null) return
-
-    val startDestination = if (isLoggedIn == true) Screen.Home.route else Screen.Login.route
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -126,31 +127,35 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 modifier = Modifier.padding(innerPadding)
             ) {
 
-                // -------------------
-                // LOGIN (Sin menú, gestionado por showBars = false)
-                // -------------------
+                // LOGIN
                 composable(Screen.Login.route) {
 
-                    // Observamos el state del ViewModel
                     val loginResponse by authViewModel.loginState.collectAsState()
                     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
-                    // Si el login fue exitoso → navegar al Home
                     LaunchedEffect(isLoggedIn) {
                         if (isLoggedIn == true && loginResponse != null) {
-                            navController.navigate(Screen.Home.route) {
+                            navController.navigate(Screen.Splash.route) {
                                 popUpTo(Screen.Login.route) { inclusive = true }
                             }
                         }
                     }
 
-                    // Pantalla de Login
                     LoginScreen(
                         errorMessage = loginError,
                         onLogin = { usuario, pass -> authViewModel.login(usuario, pass) }
-
                     )
+                }
 
+                // SPLASH
+                composable(Screen.Splash.route) {
+                    AnimatedSplashScreen(
+                        onFinish = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Splash.route) { inclusive = true }
+                            }
+                        }
+                    )
                 }
 
                 composable(Screen.ChangeCredentialsScreen.route) {
@@ -159,9 +164,6 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         onSuccess = { navController.popBackStack() }
                     )
                 }
-
-
-
 
                 // HOME
                 composable(Screen.Home.route) {
@@ -177,13 +179,11 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 }
 
                 // IA
-
                 composable(Screen.AiHelpScreen.route) {
                     AiHelpScreen()
                 }
 
-
-                // MARKET
+                // MARKETPLACE
                 composable(Screen.Market.route) {
                     val vm: MarketplaceViewModel = hiltViewModel()
                     MarketplaceScreen(
@@ -247,11 +247,7 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
-
-
-                // -------------------
                 // APOYOS
-                // -------------------
                 composable(Screen.Apoyos.route) {
                     ApoyosScreen(
                         onVerApoyo = { idApoyo ->
@@ -260,14 +256,10 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
-                // -------------------
-                // DETALLE APOYO
-                // -------------------
                 composable("apoyoDetalle/{idApoyo}") { backStackEntry ->
-                    val idApoyo = backStackEntry.arguments?.getString("idApoyo")?.toIntOrNull() ?: run {
-                        navController.popBackStack()
-                        return@composable
-                    }
+                    val idApoyo =
+                        backStackEntry.arguments?.getString("idApoyo")?.toIntOrNull()
+                            ?: return@composable
 
                     ApoyoDetalleScreen(
                         idApoyo = idApoyo,
@@ -276,11 +268,11 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
-                //Solicitudes
+                // SOLICITUDES
                 composable(Screen.Solicitudes.route) {
-                    val idEmpleado = authViewModel.getEmpleadoId()   // ✔ AHORA SÍ EL ID CORRECTO
+                    val idEmpleado = authViewModel.getEmpleadoId()
 
-                    if (idEmpleado == -1) {     // No hay sesión
+                    if (idEmpleado == -1) {
                         LaunchedEffect(Unit) {
                             navController.navigate(Screen.Login.route) {
                                 popUpTo(0)
@@ -309,11 +301,9 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                             onCredenciales = {
                                 navController.navigate(Screen.ChangeCredentialsScreen.route)
                             },
-
                         )
                     }
                 }
-
 
                 composable(Screen.CrearSolicitud.route) {
                     CrearSolicitudScreen(
@@ -328,8 +318,8 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         onVerCurso = { idCurso -> navController.navigate("cursoDetalle/$idCurso") },
                         onMarket = { navController.navigate(Screen.Market.route) },
                         onCursos = { navController.navigate(Screen.Cursos.route) },
-                        onEventos = { navController.navigate(Screen.Eventos.route) },  // ← FALTABA
-                        onApoyos = { navController.navigate(Screen.Apoyos.route) },  // ← FALTABA
+                        onEventos = { navController.navigate(Screen.Eventos.route) },
+                        onApoyos = { navController.navigate(Screen.Apoyos.route) },
                         onLogout = {
                             authViewModel.logout {
                                 navController.navigate(Screen.Login.route) {
@@ -354,16 +344,10 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
-                composable(Screen.CrearSolicitud.route) {
-                    val loginState by authViewModel.loginState.collectAsState()
-                    CrearSolicitudScreen(
-                        idEmpleado = loginState?.idEmpleado ?: 0,
-                        onBack = { navController.popBackStack() }
-                    )
-                }
-
                 composable("cursoDetalle/{idCurso}") { back ->
-                    val idCurso = back.arguments?.getString("idCurso")?.toIntOrNull() ?: return@composable
+                    val idCurso = back.arguments?.getString("idCurso")?.toIntOrNull()
+                        ?: return@composable
+
                     CursoDetalleScreen(
                         idCurso = idCurso,
                         idUsuario = realUserId,
