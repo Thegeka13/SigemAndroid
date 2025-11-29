@@ -35,6 +35,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 // 1. Llamada a la API
                 val response = repository.login(usuario, contrasenia)
 
+                // Guarda el idEmpleado aquí
+                idEmpleado = response.idEmpleado
                 // 2. GUARDADO PERSISTENTE:
                 // Si la respuesta trae ID, lo guardamos en el celular (SharedPreferences)
                 // para que el MarketplaceViewModel (con Hilt) pueda leerlo después.

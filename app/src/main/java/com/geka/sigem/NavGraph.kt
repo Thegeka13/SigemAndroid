@@ -1,5 +1,9 @@
 package com.geka.sigem
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -17,6 +21,9 @@ import com.geka.sigem.components.AppDrawer
 import com.geka.sigem.screens.*
 import com.geka.sigem.ui.inscritos.ApoyosInscritosScreen
 import com.geka.sigem.ui.viewmodel.AuthViewModel
+import com.geka.sigem.Screen
+import com.geka.sigem.screens.CrearSolicitudScreen
+import com.geka.sigem.viewmodel.EventoViewModel
 import com.geka.sigem.viewmodel.MarketplaceViewModel
 import kotlinx.coroutines.launch
 
@@ -76,6 +83,10 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     },
                     onSolicitudes = {
                         navController.navigate(Screen.Solicitudes.route) { launchSingleTop = true }
+                        scope.launch { drawerState.close() }
+                    },
+                    onEventos = {                  // ← AQUÍ LO AGREGAS
+                        navController.navigate(Screen.Eventos.route) { launchSingleTop = true }
                         scope.launch { drawerState.close() }
                     },
                     onLogout = {
@@ -271,9 +282,74 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                 // -------------------
                 composable(Screen.Cursos.route) {
                     CursosScreen(
-                        onVerCurso = { idCurso -> navController.navigate("cursoDetalle/$idCurso") }
+                        onVerCurso = { idCurso ->
+                            navController.navigate("cursoDetalle/$idCurso")
+                        },
+                        onMarket = {
+                            navController.navigate(Screen.Market.route)
+                        },
+                        onCursos = {
+                            // Ya estás dentro de Cursos, pero lo dejamos por si lo usas
+                            navController.navigate(Screen.Cursos.route)
+                        },
+                        onLogout = {
+                            authViewModel.logout {
+                                navController.navigate(Screen.Login.route) {
+                                    popUpTo(Screen.Home.route) { inclusive = true }
+                                }
+                            }
+                        },
+                        onMisCursos = {
+                            navController.navigate(Screen.MisCursos.route)
+                        },
                     )
                 }
+
+        composable(Screen.Solicitudes.route) {
+            val id = authViewModel.idEmpleado
+            if (id == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0)
+                    }
+                }
+            } else {
+                SolicitudesScreen(
+                    idEmpleado = authViewModel.idEmpleado!!,
+                    onNavigateToMarket = { navController.navigate(Screen.Market.route) },
+                    onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
+                    onLogout = {
+                        authViewModel.logout {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
+                        }
+                    },
+                    onCrearSolicitud = {
+                        navController.navigate(Screen.CrearSolicitud.route)
+                    }
+                )
+            }
+        }
+                // -------------------
+                // MIS CURSOS
+                // -------------------
+                composable(Screen.MisCursos.route) {
+                    MisCursosScreen(
+                        idUsuario = realUserId,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+        composable(Screen.CrearSolicitud.route) {
+
+            val loginState by authViewModel.loginState.collectAsState()
+
+            CrearSolicitudScreen(
+                idEmpleado = loginState?.idEmpleado ?: 0,
+                onBack = { navController.popBackStack() }
+            )
+        }
 
                 // -------------------
                 // DETALLE CURSO
@@ -289,6 +365,32 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         onBack = { navController.popBackStack() }
                     )
                 }
+
+                // EVENTOS - LISTA
+                composable(Screen.Eventos.route) {
+                    val vm: EventoViewModel = hiltViewModel()
+                    EventosScreen(
+                        viewModel = vm,
+                        onOpenDetail = { id ->
+                            navController.navigate("eventos/detalle/$id")
+                        }
+                    )
+                }
+
+                // EVENTO DETALLE
+                composable(
+                    route = "eventos/detalle/{idEvento}",
+                    arguments = listOf(navArgument("idEvento") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val idEvento = backStackEntry.arguments?.getInt("idEvento") ?: return@composable
+                    val vm: EventoViewModel = hiltViewModel()
+                    EventoDetalleScreen(
+                        idEvento = idEvento,
+                        viewModel = vm,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
             }
         }
     }

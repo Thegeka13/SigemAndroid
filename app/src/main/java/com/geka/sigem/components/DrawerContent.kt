@@ -8,9 +8,11 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.runtime.Composable
@@ -22,7 +24,9 @@ fun AppDrawer(
     onMarket: () -> Unit,
     onCursos: () -> Unit,   // ← Nuevo callback
     onApoyos: () -> Unit,
+    onCursos: () -> Unit,
     onSolicitudes: () -> Unit,
+    onEventos: () -> Unit,  // ← NUEVO CALLBACK
     onLogout: () -> Unit
 ) {
     ModalDrawerSheet {
@@ -43,7 +47,6 @@ fun AppDrawer(
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
-            // NUEVO ÍTEM DE CURSOS
             NavigationDrawerItem(
                 label = { Text("Cursos") },
                 icon = { Icon(Icons.Default.School, "Cursos") },
@@ -61,19 +64,28 @@ fun AppDrawer(
             )
 
 
+            // ✅ NUEVO BOTÓN DE EVENTOS
             NavigationDrawerItem(
-                label = { Text("Logout") },
-                icon = { Icon(Icons.Default.Logout, "Logout") },
+                label = { Text("Eventos") },
+                icon = { Icon(Icons.Default.Event, "Eventos") },
                 selected = false,
-                onClick = { onLogout() },
+                onClick = { onEventos() },
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
             NavigationDrawerItem(
                 label = { Text("Solicitudes") },
-                icon = { Icon(Icons.Default.ShoppingCart, "Solicitudes") },
+                icon = { Icon(Icons.Default.CalendarToday, "Solicitudes") },
                 selected = false,
                 onClick = { onSolicitudes() },
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+
+            NavigationDrawerItem(
+                label = { Text("Logout") },
+                icon = { Icon(Icons.Default.Logout, "Logout") },
+                selected = false,
+                onClick = { onLogout() },
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }

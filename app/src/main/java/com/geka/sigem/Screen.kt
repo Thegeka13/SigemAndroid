@@ -25,6 +25,8 @@ sealed class Screen(val route: String) {
     // ----------------------
     object Cursos : Screen("cursos")
     object CursoDetalle : Screen("curso/{id}")
+    object MisCursos : Screen("misCursos")
+
 
 
     // ----------------------
@@ -38,4 +40,13 @@ sealed class Screen(val route: String) {
     // SOLICITUDES
     // ----------------------
     object Solicitudes : Screen("solicitudes")
+
+
+    object Solicitudes : Screen("solicitudes")
+
+    object CrearSolicitud : Screen("crear_solicitud")
+
+    object Eventos : Screen("eventos")
+    object EventoDetalle : Screen("eventos/detalle/{idEvento}")
+
 }
