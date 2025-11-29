@@ -31,6 +31,8 @@ fun CursosScreen(
     onCursos: () -> Unit,
     onEventos: () -> Unit,
     onApoyos: () ->Unit,
+    onCredenciales: () -> Unit,
+    onNavigateHelpIAscreen: () -> Unit,
     onLogout: () -> Unit,
     viewModel: CursosViewModel = viewModel()
 ) {
@@ -68,6 +70,14 @@ fun CursosScreen(
                 onApoyos = {
                     scope.launch { drawerState.close() }
                     onApoyos()
+                },
+                onCredenciales = {
+                    scope.launch { drawerState.close() }
+                    onCredenciales()
+                },
+                onAiHelp = {
+                    scope.launch { drawerState.close() }
+                    onNavigateHelpIAscreen()
                 },
                 onLogout = {
                     scope.launch { drawerState.close() }

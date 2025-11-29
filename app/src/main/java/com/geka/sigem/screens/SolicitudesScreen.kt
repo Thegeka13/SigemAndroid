@@ -41,7 +41,9 @@ fun SolicitudesScreen(
     onEventos: () -> Unit,               // este parámetro SÍ debe existir
     onLogout: () -> Unit,
     onApoyos: () -> Unit,
+    onCredenciales: () -> Unit,
     onCrearSolicitud: () -> Unit,
+    onNavigateHelpIAscreen: () -> Unit,
     viewModel: SolicitudViewModel = viewModel()
 ) {
     val solicitudes by viewModel.solicitudes.collectAsState()
@@ -70,6 +72,14 @@ fun SolicitudesScreen(
                 onApoyos = {
                     onApoyos()                      // CORREGIDO
                     scope.launch { drawerState.close() }
+                },
+                onCredenciales = {
+                    scope.launch { drawerState.close() }
+                    onCredenciales()
+                },
+                onAiHelp = {
+                    scope.launch { drawerState.close() }
+                    onNavigateHelpIAscreen()
                 },
                 onLogout = {
                     onLogout()

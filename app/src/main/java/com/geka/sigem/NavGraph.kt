@@ -50,6 +50,8 @@ fun AppNavHost(authViewModel: AuthViewModel) {
         currentRoute == Screen.Solicitudes.route -> "Solicitudes"
         currentRoute == Screen.Cursos.route -> "Cursos"
         currentRoute == Screen.Eventos.route -> "Eventos"
+        currentRoute == Screen.ChangeCredentialsScreen.route -> "Modificar Credenciales"
+        currentRoute == Screen.AiHelpScreen.route -> "Asistente de Ayuda"
         else -> "Sigem App"
     }
 
@@ -81,6 +83,14 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     },
                     onApoyos = {
                         navController.navigate(Screen.Apoyos.route) { launchSingleTop = true }
+                        scope.launch { drawerState.close() }
+                    },
+                    onCredenciales = {
+                        navController.navigate(Screen.ChangeCredentialsScreen.route) { launchSingleTop = true }
+                        scope.launch { drawerState.close() }
+                    },
+                    onAiHelp = {
+                        navController.navigate(Screen.AiHelpScreen.route) { launchSingleTop = true }
                         scope.launch { drawerState.close() }
                     },
                     onLogout = {
@@ -143,15 +153,35 @@ fun AppNavHost(authViewModel: AuthViewModel) {
 
                 }
 
+                composable(Screen.ChangeCredentialsScreen.route) {
+                    ChangeCredentialsScreen(
+                        authViewModel = authViewModel,
+                        onSuccess = { navController.popBackStack() }
+                    )
+                }
+
+
+
+
                 // HOME
                 composable(Screen.Home.route) {
                     HomeScreen(
                         onNavigateToSolicitudes = { navController.navigate(Screen.Solicitudes.route) },
                         onNavigateToMarket = { navController.navigate(Screen.Market.route) },
                         onNavigateToCursos = { navController.navigate(Screen.Cursos.route) },
+                        onNavigateToEventos = { navController.navigate(Screen.Eventos.route) },
+                        onNavigateToCredenciales = { navController.navigate(Screen.ChangeCredentialsScreen.route) },
+                        onNavigateHelpIAscreen = { navController.navigate(Screen.AiHelpScreen.route) },
                         onLogout = {}
                     )
                 }
+
+                // IA
+
+                composable(Screen.AiHelpScreen.route) {
+                    AiHelpScreen()
+                }
+
 
                 // MARKET
                 composable(Screen.Market.route) {
@@ -272,7 +302,14 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                             },
                             onCrearSolicitud = {
                                 navController.navigate(Screen.CrearSolicitud.route)
-                            }
+                            },
+                            onNavigateHelpIAscreen = {
+                                navController.navigate(Screen.AiHelpScreen.route)
+                            },
+                            onCredenciales = {
+                                navController.navigate(Screen.ChangeCredentialsScreen.route)
+                            },
+
                         )
                     }
                 }
@@ -300,7 +337,13 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                                 }
                             }
                         },
-                        onMisCursos = { navController.navigate(Screen.MisCursos.route) }
+                        onMisCursos = { navController.navigate(Screen.MisCursos.route) },
+                        onNavigateHelpIAscreen = {
+                            navController.navigate(Screen.AiHelpScreen.route)
+                        },
+                        onCredenciales = {
+                            navController.navigate(Screen.ChangeCredentialsScreen.route)
+                        }
                     )
                 }
 

@@ -20,6 +20,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _loginAttempted = MutableStateFlow(false)
     val loginState: StateFlow<LoginResponse?> = _loginState
 
+    //Update usuario
+    private val _updateSuccess = MutableStateFlow<Boolean?>(null)
+    val updateSuccess: StateFlow<Boolean?> = _updateSuccess
+
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError
 
@@ -72,5 +76,21 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
             onFinish()
         }
+    }
+
+    // Update
+    fun updateUsuario(id: Int, usuario: String?, contrasenia: String?) {
+        viewModelScope.launch {
+            try {
+                val result = repository.updateUsuario(id, usuario, contrasenia)
+                _updateSuccess.value = result   // true o false según el backend
+            } catch (e: Exception) {
+                _updateSuccess.value = false
+            }
+        }
+    }
+
+    fun resetUpdateState() {
+        _updateSuccess.value = null
     }
 }
