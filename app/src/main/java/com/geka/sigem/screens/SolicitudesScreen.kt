@@ -18,16 +18,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.geka.sigem.components.AppDrawer
+import com.geka.sigem.data.models.Evento
 import com.geka.sigem.ui.viewmodel.SolicitudViewModel
 import kotlinx.coroutines.launch
 
+// Paleta de colores profesional
+object SolicitudesColors {
+    val primaryBlue = Color(0xFF1E40AF)      // Azul profundo
+    val lightBlue = Color(0xFF3B82F6)        // Azul claro
+    val accentBlue = Color(0xFF0EA5E9)       // Azul brillante
+    val veryLightBlue = Color(0xFFEFF6FF)    // Fondo azul muy claro
+    val darkGray = Color(0xFF1F2937)
+    val mediumGray = Color(0xFF6B7280)
+    val lightGray = Color(0xFFF3F4F6)
+}
+
 @Composable
 fun SolicitudesScreen(
+    idEmpleado: Int,                     // recomendado al inicio
     onNavigateToMarket: () -> Unit,
     onNavigateToCursos: () -> Unit,
+    onEventos: () -> Unit,               // este parámetro SÍ debe existir
     onLogout: () -> Unit,
-    idEmpleado: Int,
+    onApoyos: () -> Unit,
+    onCredenciales: () -> Unit,
     onCrearSolicitud: () -> Unit,
+    onNavigateHelpIAscreen: () -> Unit,
     viewModel: SolicitudViewModel = viewModel()
 ) {
     val solicitudes by viewModel.solicitudes.collectAsState()
@@ -46,11 +62,27 @@ fun SolicitudesScreen(
                     onNavigateToCursos()
                     scope.launch { drawerState.close() }
                 },
-                onLogout = {
-                    onLogout()
+                onSolicitudes = {
                     scope.launch { drawerState.close() }
                 },
-                onSolicitudes = {
+                onEventos = {
+                    onEventos()                      // CORREGIDO
+                    scope.launch { drawerState.close() }
+                },
+                onApoyos = {
+                    onApoyos()                      // CORREGIDO
+                    scope.launch { drawerState.close() }
+                },
+                onCredenciales = {
+                    scope.launch { drawerState.close() }
+                    onCredenciales()
+                },
+                onAiHelp = {
+                    scope.launch { drawerState.close() }
+                    onNavigateHelpIAscreen()
+                },
+                onLogout = {
+                    onLogout()
                     scope.launch { drawerState.close() }
                 }
             )
@@ -63,26 +95,33 @@ fun SolicitudesScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
-                .padding(24.dp)
+                .background(Color.White)
         ) {
-            // Encabezado
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // Header con gradiente azul
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                            colors = listOf(
+                                SolicitudesColors.primaryBlue,
+                                SolicitudesColors.lightBlue
+                            )
+                        )
+                    )
+                    .padding(24.dp)
             ) {
                 Column {
                     Text(
                         text = "Mis Solicitudes",
                         fontSize = 28.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF1A1A1A)
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                     Text(
                         text = "Gestión de vacaciones",
                         fontSize = 14.sp,
-                        color = Color(0xFF6B7280),
+                        color = Color.White.copy(alpha = 0.85f),
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -90,18 +129,20 @@ fun SolicitudesScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Lista de solicitudes con peso para ocupar espacio disponible
-            Box(modifier = Modifier.weight(1f)) {
+            Box(modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+            ) {
+
                 if (solicitudes.isEmpty()) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color.White
+                            containerColor = SolicitudesColors.veryLightBlue
                         ),
-                        elevation = CardDefaults.cardElevation(
-                            defaultElevation = 1.dp
-                        )
+                        elevation = CardDefaults.cardElevation(0.dp)
                     ) {
                         Column(
                             modifier = Modifier
@@ -113,30 +154,25 @@ fun SolicitudesScreen(
                                 imageVector = Icons.Default.DateRange,
                                 contentDescription = null,
                                 modifier = Modifier.size(48.dp),
-                                tint = Color(0xFFE0E0E0)
+                                tint = SolicitudesColors.lightBlue
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = "No hay solicitudes",
                                 fontSize = 16.sp,
-                                color = Color(0xFF6B7280)
+                                fontWeight = FontWeight.SemiBold,
+                                color = SolicitudesColors.darkGray
                             )
                         }
                     }
                 } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         items(solicitudes) { solicitud ->
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color.White
-                                ),
-                                elevation = CardDefaults.cardElevation(
-                                    defaultElevation = 1.dp
-                                )
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(2.dp)
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -147,8 +183,8 @@ fun SolicitudesScreen(
                                     Icon(
                                         imageVector = Icons.Default.DateRange,
                                         contentDescription = null,
-                                        tint = Color(0xFF2563EB),
-                                        modifier = Modifier.size(24.dp)
+                                        tint = SolicitudesColors.lightBlue,
+                                        modifier = Modifier.size(32.dp)
                                     )
 
                                     Spacer(modifier = Modifier.width(16.dp))
@@ -157,14 +193,14 @@ fun SolicitudesScreen(
                                         Text(
                                             text = "${solicitud.fechaInicio} - ${solicitud.fechaFin}",
                                             fontSize = 16.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            color = Color(0xFF1A1A1A)
+                                            fontWeight = FontWeight.Bold,
+                                            color = SolicitudesColors.darkGray
                                         )
 
                                         Text(
                                             text = "Solicitud de vacaciones",
                                             fontSize = 14.sp,
-                                            color = Color(0xFF6B7280),
+                                            color = SolicitudesColors.mediumGray,
                                             modifier = Modifier.padding(top = 4.dp)
                                         )
 
@@ -172,18 +208,27 @@ fun SolicitudesScreen(
                                             Text(
                                                 text = solicitud.comentarioAdministrador!!,
                                                 fontSize = 13.sp,
-                                                color = Color(0xFF6B7280),
+                                                color = SolicitudesColors.mediumGray,
                                                 modifier = Modifier.padding(top = 6.dp)
                                             )
                                         }
 
-                                        Text(
-                                            text = solicitud.estado,
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.Black,
-                                            modifier = Modifier.padding(top = 8.dp)
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(top = 8.dp)
+                                                .background(
+                                                    color = SolicitudesColors.veryLightBlue,
+                                                    shape = RoundedCornerShape(6.dp)
+                                                )
+                                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                                        ) {
+                                            Text(
+                                                text = solicitud.estado,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = SolicitudesColors.primaryBlue
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -194,14 +239,15 @@ fun SolicitudesScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón siempre visible
             Button(
                 onClick = onCrearSolicitud,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF2563EB)
-                ),
-                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 16.dp)
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = SolicitudesColors.accentBlue),
+                shape = RoundedCornerShape(12.dp),
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
             ) {
                 Icon(

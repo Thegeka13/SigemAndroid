@@ -20,6 +20,8 @@ fun MainLayout(
     onNavigateToCursos: () -> Unit,
     onNavigateToApoyos: () -> Unit,
     onNavigateToEventos: () -> Unit,   // ← AGREGADO
+    onCredenciales: () -> Unit,
+    onNavigateHelpIAscreen: () -> Unit,
     onLogout: () -> Unit,
 
     // Acciones de la topbar (opcional)
@@ -54,6 +56,14 @@ fun MainLayout(
                 onEventos = {                    // ← CORREGIDO
                     scope.launch { drawerState.close() }
                     onNavigateToEventos()
+                },
+                onCredenciales = {
+                    scope.launch { drawerState.close() }
+                    onCredenciales()
+                },
+                onAiHelp = {
+                    scope.launch { drawerState.close() }
+                    onNavigateHelpIAscreen()
                 },
                 onLogout = {
                     scope.launch { drawerState.close() }

@@ -1,19 +1,18 @@
 package com.geka.sigem.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -74,7 +73,7 @@ fun CursoDetalleScreen(
                 loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = androidx.compose.ui.Alignment.Center
+                        contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(56.dp),
@@ -125,7 +124,7 @@ fun CursoDetalleScreen(
                 else -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = androidx.compose.ui.Alignment.Center
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             mensaje ?: "Curso no encontrado",
@@ -329,8 +328,8 @@ private fun StatBox(
     icon: ImageVector,
     label: String,
     value: String,
-    backgroundColor: androidx.compose.ui.graphics.Color,
-    textColor: androidx.compose.ui.graphics.Color,
+    backgroundColor: Color,
+    textColor: Color,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -340,7 +339,7 @@ private fun StatBox(
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
@@ -409,53 +408,100 @@ private fun EnrollmentSection(
     onInscribir: () -> Unit,
     mensaje: String?
 ) {
+    val isSuccess = mensaje?.contains("éxito", ignoreCase = true) == true
+
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Botón de inscripción
         Button(
             onClick = onInscribir,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(12.dp),
+                .height(50.dp),
+            shape = RoundedCornerShape(14.dp),
             enabled = curso.lugaresDisponibles > 0,
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (curso.lugaresDisponibles > 0)
-                    MaterialTheme.colorScheme.primary
+                    Color(0xFF4CAF50) // Verde
                 else
-                    MaterialTheme.colorScheme.surfaceVariant
+                    Color(0xFF9E9E9E), // Gris
+                disabledContainerColor = Color(0xFF9E9E9E),
+                contentColor = Color.White
+            ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 8.dp,
+                pressedElevation = 12.dp
             )
         ) {
+            Icon(
+                imageVector = if (curso.lugaresDisponibles > 0)
+                    Icons.Default.CheckCircle
+                else
+                    Icons.Default.Block,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(20.dp)
+                    .padding(end = 8.dp)
+            )
             Text(
-                if (curso.lugaresDisponibles > 0) "Inscribirme ahora" else "Sin lugares disponibles",
+                text = if (curso.lugaresDisponibles > 0)
+                    "Inscribirme ahora"
+                else
+                    "Sin lugares disponibles",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
         }
 
-        // Mensaje de feedback
-        mensaje?.let {
+        // Mensaje de respuesta
+        mensaje?.let { msg ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (it.contains("éxito", ignoreCase = true))
-                        MaterialTheme.colorScheme.secondaryContainer
+                    containerColor = if (isSuccess)
+                        Color(0xFFC8E6C9) // Verde más saturado
                     else
-                        MaterialTheme.colorScheme.errorContainer
-                )
+                        Color(0xFFFFCDD2) // Rojo suave
+                ),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(
+                    1.5.dp,
+                    if (isSuccess) Color(0xFF4CAF50) else Color(0xFFE53935)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Text(
-                    text = it,
-                    modifier = Modifier.padding(12.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (it.contains("éxito", ignoreCase = true))
-                        MaterialTheme.colorScheme.onSecondaryContainer
-                    else
-                        MaterialTheme.colorScheme.onErrorContainer,
-                    fontWeight = FontWeight.Medium
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (isSuccess)
+                            Icons.Default.TaskAlt
+                        else
+                            Icons.Default.Error,
+                        contentDescription = null,
+                        tint = if (isSuccess)
+                            Color(0xFF2E7D32)
+                        else
+                            Color(0xFFC62828),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(
+                        text = msg,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isSuccess)
+                            Color(0xFF1B5E20)
+                        else
+                            Color(0xFF8B0000),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }

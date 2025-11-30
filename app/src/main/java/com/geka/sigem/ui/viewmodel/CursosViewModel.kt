@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.geka.sigem.data.models.InscritoRequest
 import com.geka.sigem.data.models.Curso
 import com.geka.sigem.data.repository.CursoRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 class CursosViewModel : ViewModel() {
 
@@ -33,6 +35,12 @@ class CursosViewModel : ViewModel() {
         _message.value = msg
     }
 
+    private fun clearMessageDelayed() {
+        viewModelScope.launch {
+            delay(3000)
+            _message.value = null
+        }
+    }
 
     fun loadMisCursos(idUsuario: Int) {
         viewModelScope.launch {
@@ -40,50 +48,42 @@ class CursosViewModel : ViewModel() {
             try {
                 _misCursos.value = repository.getCursosInscrito(idUsuario)
             } catch (e: Exception) {
-                _message.value = "Error al cargar mis cursos: ${e.message}"
+                _message.value = "Error al cargar mis cursos"
+                clearMessageDelayed()
             } finally {
                 _loading.value = false
             }
         }
     }
 
-    // ------------------------------
-    // CARGAR LISTA DE CURSOS
-    // ------------------------------
     fun loadCursos() {
         viewModelScope.launch {
             _loading.value = true
             try {
                 _cursos.value = repository.getCursos()
             } catch (e: Exception) {
-                _message.value = "Error al cargar cursos: ${e.message}"
+                _message.value = "Error al cargar cursos"
+                clearMessageDelayed()
             } finally {
                 _loading.value = false
             }
         }
     }
 
-
-    // ------------------------------
-    // CARGAR CURSO INDIVIDUAL
-    // ------------------------------
     fun loadCurso(idCurso: Int) {
         viewModelScope.launch {
             _loading.value = true
             try {
                 _curso.value = repository.getCurso(idCurso)
             } catch (e: Exception) {
-                _message.value = "Error al cargar curso: ${e.message}"
+                _message.value = "Error al cargar curso"
+                clearMessageDelayed()
             } finally {
                 _loading.value = false
             }
         }
     }
 
-
-    // ------------------------------
-    // INSCRIBIR USUARIO A CURSO
-    // ------------------------------
     fun inscribir(idCurso: Int, idUsuario: Int) {
         viewModelScope.launch {
             _loading.value = true
@@ -94,11 +94,20 @@ class CursosViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     _message.value = "Inscripción exitosa"
                 } else {
-                    _message.value = "Error al inscribir: ${response.errorBody()?.string()}"
+                    val errorText = response.errorBody()?.string()
+                    val parsed = try {
+                        JSONObject(errorText ?: "").getString("message")
+                    } catch (_: Exception) {
+                        "Error desconocido al inscribir"
+                    }
+                    _message.value = parsed
                 }
 
+                clearMessageDelayed()
+
             } catch (e: Exception) {
-                _message.value = "Error al inscribir: ${e.message}"
+                _message.value = "Error al inscribir"
+                clearMessageDelayed()
             } finally {
                 _loading.value = false
             }

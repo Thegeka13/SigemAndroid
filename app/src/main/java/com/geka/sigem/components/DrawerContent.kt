@@ -7,8 +7,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.School
@@ -24,9 +26,10 @@ fun AppDrawer(
     onMarket: () -> Unit,
     onCursos: () -> Unit,   // ← Nuevo callback
     onApoyos: () -> Unit,
-    onCursos: () -> Unit,
     onSolicitudes: () -> Unit,
     onEventos: () -> Unit,  // ← NUEVO CALLBACK
+    onCredenciales: () -> Unit,
+    onAiHelp: () -> Unit,
     onLogout: () -> Unit
 ) {
     ModalDrawerSheet {
@@ -86,6 +89,21 @@ fun AppDrawer(
                 icon = { Icon(Icons.Default.Logout, "Logout") },
                 selected = false,
                 onClick = { onLogout() },
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+
+            NavigationDrawerItem(
+                label = { Text("Perfil") },
+                icon = { Icon(Icons.Default.AccountCircle, "Perfil") },
+                selected = false,
+                onClick = { onCredenciales() },
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            NavigationDrawerItem(
+                label = { Text("Asistente de Ayuda") },
+                icon = { Icon(Icons.Default.Chat, "Asistente de Ayuda") },
+                selected = false,
+                onClick = { onAiHelp() },
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }

@@ -13,6 +13,9 @@ class ApoyoRepository {
 
     suspend fun getApoyo(id: Int): Apoyo = api.getApoyo(id)
 
+    suspend fun getApoyosInscritos(idUsuario: Int): List<Apoyo> =
+        api.getApoyosInscritos(idUsuario)
+
     suspend fun inscribirEnApoyo(idUsuario: Int, idApoyo: Int): Response<Map<String, Any>> {
         val request = ApoyoInscripcionRequest(idUsuario, idApoyo)
         return api.inscribirEnApoyo(request)

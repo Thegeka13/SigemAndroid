@@ -13,12 +13,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.geka.sigem.components.AppDrawer
 import com.geka.sigem.data.models.Curso
 import com.geka.sigem.ui.viewmodel.CursosViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun CursosScreen(
@@ -26,9 +29,16 @@ fun CursosScreen(
     onMisCursos: () -> Unit,
     onMarket: () -> Unit,
     onCursos: () -> Unit,
+    onEventos: () -> Unit,
+    onApoyos: () ->Unit,
+    onCredenciales: () -> Unit,
+    onNavigateHelpIAscreen: () -> Unit,
     onLogout: () -> Unit,
     viewModel: CursosViewModel = viewModel()
 ) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
     val cursos by viewModel.cursos.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val message by viewModel.message.collectAsState()
@@ -49,69 +59,101 @@ fun CursosScreen(
                     scope.launch { drawerState.close() }
                     onCursos()
                 },
+                onSolicitudes = {
+                    scope.launch { drawerState.close() }
+                    onEventos()
+                },
+                onEventos = {
+                    scope.launch { drawerState.close() }
+                    onEventos()
+                },
+                onApoyos = {
+                    scope.launch { drawerState.close() }
+                    onApoyos()
+                },
+                onCredenciales = {
+                    scope.launch { drawerState.close() }
+                    onCredenciales()
+                },
+                onAiHelp = {
+                    scope.launch { drawerState.close() }
+                    onNavigateHelpIAscreen()
+                },
                 onLogout = {
                     scope.launch { drawerState.close() }
                     onLogout()
-                }, onSolicitudes = {
-                    scope.launch { drawerState.close() }
-                    onLogout()
-                }, onEventos =  {
-                scope.launch { drawerState.close() }
-            }
+                }
             )
         }
     ) {
-
-        HeaderCursos(onMisCursos)
-
-
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            when {
-                loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = androidx.compose.ui.Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
+            HeaderCursos(onMisCursos)
 
-                cursos.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = androidx.compose.ui.Alignment.Center
-                    ) {
-                        Text("No hay cursos disponibles")
-                    }
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
 
-                else -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
+                // Banner de error elegante
+                message?.let {
+                    Card(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        items(cursos) { curso ->
-                            CursoRow(
-                                curso = curso,
-                                onVerCurso = onVerCurso
+                        Row(
+                            modifier = Modifier
+                                .padding(14.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = it,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }
                 }
-            }
 
-            message?.let {
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .align(androidx.compose.ui.Alignment.TopCenter)
-                        .padding(8.dp)
-                )
+                when {
+                    loading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+
+                    cursos.isEmpty() -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("No hay cursos disponibles")
+                        }
+                    }
+
+                    else -> {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(bottom = 16.dp)
+                        ) {
+                            items(cursos) { curso ->
+                                CursoRow(
+                                    curso = curso,
+                                    onVerCurso = onVerCurso
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -125,43 +167,61 @@ private fun HeaderCursos(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.primary)
-            .padding(24.dp)
+            .padding(vertical = 28.dp, horizontal = 24.dp)
     ) {
-        Column {
-            Icon(
-                imageVector = Icons.Default.School,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                "Cursos",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 28.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                "Explora los cursos disponibles",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-            )
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Icon(
+                        imageVector = Icons.Default.School,
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        "Cursos",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        "Explora los cursos disponibles",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = { onMisCursos() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(10.dp)
+                    .height(45.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
             ) {
-                Text("Mis cursos")
+                Text(
+                    "Mis cursos",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 }
-
 
 @Composable
 fun CursoRow(
@@ -172,7 +232,7 @@ fun CursoRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -180,31 +240,41 @@ fun CursoRow(
         Column(
             modifier = Modifier
                 .padding(16.dp)
+                .fillMaxWidth()
         ) {
             Text(
                 text = curso.nombre,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            InfoRow(
+            Divider(modifier = Modifier.fillMaxWidth())
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            CursoInfoRow(
                 icon = Icons.Default.School,
                 label = "Institución",
                 value = curso.institucion
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            InfoRow(
+            CursoInfoRow(
                 icon = Icons.Default.People,
                 label = "Inscritos",
                 value = "${curso.alumnosInscritos}/${curso.capacidadMaxima}"
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Divider(modifier = Modifier.fillMaxWidth())
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             CapacityIndicator(
                 disponibles = curso.lugaresDisponibles,
@@ -212,16 +282,20 @@ fun CursoRow(
                 inscritos = curso.alumnosInscritos
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = { onVerCurso(curso.idCurso) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp),
+                    .height(45.dp),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Ver detalles")
+                Text(
+                    "Ver detalles",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -235,26 +309,29 @@ private fun CursoInfoRow(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(22.dp)
         )
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp
             )
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 14.sp
             )
         }
     }
@@ -270,37 +347,40 @@ private fun CapacityIndicator(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                MaterialTheme.colorScheme.surfaceVariant,
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                 RoundedCornerShape(12.dp)
             )
-            .padding(12.dp)
+            .padding(14.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 "Lugares disponibles",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp
             )
             Text(
                 "$disponibles/$capacidad",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 14.sp
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         LinearProgressIndicator(
             progress = { (capacidad - disponibles).toFloat() / capacidad },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(6.dp)
-                .clip(RoundedCornerShape(3.dp)),
+                .height(8.dp)
+                .clip(RoundedCornerShape(4.dp)),
             color = if (disponibles > 0)
                 MaterialTheme.colorScheme.primary
             else

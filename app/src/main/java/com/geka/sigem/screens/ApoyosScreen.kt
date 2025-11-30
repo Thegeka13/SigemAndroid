@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.MenuOpen
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +34,7 @@ val VerdeCheck = Color(0xFF4CAF50)
 @Composable
 fun ApoyosScreen(
     onVerApoyo: (Int) -> Unit,
+    onVerMisApoyos: () -> Unit,
     viewModel: ApoyosViewModel = viewModel()
 ) {
     val apoyos by viewModel.apoyos.collectAsState()
@@ -51,6 +53,10 @@ fun ApoyosScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+
+            // ============================
+            //   HEADER con botón adentro
+            // ============================
             // Header con fondo azul
             Surface(
                 modifier = Modifier
@@ -61,32 +67,61 @@ fun ApoyosScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 20.dp, vertical = 10.dp), // <-- Subí el contenido
+                    verticalAlignment = Alignment.Top,                  // <-- Alineado hacia arriba
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.CardGiftcard,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(40.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = "Apoyos",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
+
+                    // Bloque izquierdo
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.CardGiftcard,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(40.dp)
                         )
-                        Text(
-                            text = "Explora los apoyos disponibles",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontSize = 14.sp
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Column {
+                            Text(
+                                text = "Apoyos",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Explora los apoyos disponibles",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White.copy(alpha = 0.9f),
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+
+                    // ⭐ BOTÓN AJUSTADO (más arriba y letra más pequeña)
+                    Button(
+                        onClick = onVerMisApoyos,
+                        modifier = Modifier
+                            .height(36.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AzulClaro),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MenuOpen,
+                            contentDescription = "Mis Apoyos",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
+
                 }
             }
+
+
+            // =======================================
+            //  EL BOTÓN ORIGINAL YA NO ESTÁ AQUÍ
+            // =======================================
+
 
             // Contenido
             if (loading) {
@@ -138,7 +173,7 @@ fun ApoyoCard(apoyo: Apoyo, onVerApoyo: (Int) -> Unit) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Nombre del apoyo
+
             Text(
                 text = apoyo.nombre ?: "Sin nombre",
                 style = MaterialTheme.typography.titleLarge,
@@ -149,7 +184,6 @@ fun ApoyoCard(apoyo: Apoyo, onVerApoyo: (Int) -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Descripción con icono
             Row(
                 verticalAlignment = Alignment.Top,
                 modifier = Modifier.fillMaxWidth()
@@ -179,7 +213,6 @@ fun ApoyoCard(apoyo: Apoyo, onVerApoyo: (Int) -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Requisitos con icono
             Row(
                 verticalAlignment = Alignment.Top,
                 modifier = Modifier.fillMaxWidth()
@@ -209,14 +242,12 @@ fun ApoyoCard(apoyo: Apoyo, onVerApoyo: (Int) -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Línea separadora
             Divider(
                 color = GrisClaro,
                 thickness = 1.dp,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
 
-            // Progreso visual (opcional, puedes ajustar según tus datos)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -239,7 +270,6 @@ fun ApoyoCard(apoyo: Apoyo, onVerApoyo: (Int) -> Unit) {
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Barra de progreso
             LinearProgressIndicator(
                 progress = 0.3f,
                 modifier = Modifier
@@ -252,7 +282,6 @@ fun ApoyoCard(apoyo: Apoyo, onVerApoyo: (Int) -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón "Ver detalles"
             Button(
                 onClick = { onVerApoyo(apoyo.idApoyo ?: 0) },
                 modifier = Modifier

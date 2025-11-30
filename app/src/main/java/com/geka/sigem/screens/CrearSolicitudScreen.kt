@@ -1,5 +1,9 @@
 package com.geka.sigem.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,11 +18,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.geka.sigem.ui.viewmodel.SolicitudViewModel
-import java.time.LocalDate
+import java.time.Instant
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,18 +38,28 @@ fun CrearSolicitudScreen(
     var fechaFin by remember { mutableStateOf("") }
     var motivo by remember { mutableStateOf("") }
 
+    val context = LocalContext.current
+
     var showDatePickerInicio by remember { mutableStateOf(false) }
     var showDatePickerFin by remember { mutableStateOf(false) }
 
     val datePickerStateInicio = rememberDatePickerState()
     val datePickerStateFin = rememberDatePickerState()
 
+    // -------------------------------
+    // Launcher para permisos (si lo necesitas)
+    // -------------------------------
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        // Manejo del permiso si lo usas
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
-        // Barra superior
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = Color.White,
@@ -67,8 +83,7 @@ fun CrearSolicitudScreen(
                     Text(
                         text = "Nueva Solicitud",
                         fontSize = 20.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF1A1A1A)
+                        fontWeight = FontWeight.Medium
                     )
                     Text(
                         text = "Solicitud de vacaciones",
@@ -79,7 +94,6 @@ fun CrearSolicitudScreen(
             }
         }
 
-        // Contenido del formulario
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -89,114 +103,61 @@ fun CrearSolicitudScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 1.dp
-                )
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
+                    modifier = Modifier.padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     Text(
                         text = "Información del período",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF1A1A1A)
+                        fontWeight = FontWeight.Medium
                     )
 
                     // Campo Fecha Inicio
                     OutlinedTextField(
                         value = fechaInicio,
-                        onValueChange = { },
+                        onValueChange = {},
                         readOnly = true,
                         label = { Text("Fecha de inicio") },
-                        placeholder = { Text("Seleccionar fecha") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = "Calendario"
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF2563EB),
-                            unfocusedBorderColor = Color(0xFFE0E0E0)
-                        ),
-                        shape = RoundedCornerShape(8.dp),
                         trailingIcon = {
                             IconButton(onClick = { showDatePickerInicio = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.CalendarToday,
-                                    contentDescription = "Seleccionar fecha",
-                                    tint = Color(0xFF2563EB)
-                                )
+                                Icon(Icons.Default.CalendarToday, contentDescription = null)
                             }
-                        }
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     // Campo Fecha Fin
                     OutlinedTextField(
                         value = fechaFin,
-                        onValueChange = { },
+                        onValueChange = {},
                         readOnly = true,
                         label = { Text("Fecha de fin") },
-                        placeholder = { Text("Seleccionar fecha") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = "Calendario"
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF2563EB),
-                            unfocusedBorderColor = Color(0xFFE0E0E0)
-                        ),
-                        shape = RoundedCornerShape(8.dp),
                         trailingIcon = {
                             IconButton(onClick = { showDatePickerFin = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.CalendarToday,
-                                    contentDescription = "Seleccionar fecha",
-                                    tint = Color(0xFF2563EB)
-                                )
+                                Icon(Icons.Default.CalendarToday, contentDescription = null)
                             }
-                        }
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     )
 
-                    Divider(
-                        color = Color(0xFFE0E0E0),
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
+                    Divider()
 
                     Text(
                         text = "Detalles adicionales",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF1A1A1A)
+                        fontWeight = FontWeight.Medium
                     )
 
-                    // Campo Motivo
                     OutlinedTextField(
                         value = motivo,
                         onValueChange = { motivo = it },
                         label = { Text("Motivo de la solicitud") },
-                        placeholder = { Text("Describe el motivo de tu solicitud") },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF2563EB),
-                            unfocusedBorderColor = Color(0xFFE0E0E0)
-                        ),
-                        shape = RoundedCornerShape(8.dp),
                         maxLines = 4
                     )
                 }
@@ -204,24 +165,15 @@ fun CrearSolicitudScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botones de acción
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
                     onClick = onBack,
-                    modifier = Modifier.weight(1f).height(48.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFF6B7280)
-                    )
+                    modifier = Modifier.weight(1f).height(48.dp)
                 ) {
-                    Text(
-                        text = "Cancelar",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Text("Cancelar")
                 }
 
                 Button(
@@ -236,85 +188,69 @@ fun CrearSolicitudScreen(
                         }
                     },
                     modifier = Modifier.weight(1f).height(48.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2563EB)
-                    ),
-                    shape = RoundedCornerShape(8.dp),
                     enabled = fechaInicio.isNotEmpty() && fechaFin.isNotEmpty()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Send,
-                        contentDescription = "Enviar",
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Icon(Icons.Default.Send, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Enviar Solicitud",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Text("Enviar Solicitud")
                 }
             }
         }
     }
 
-    // DatePicker para fecha de inicio
+    // -------------------------------
+    // DatePicker para Inicio
+    // -------------------------------
     if (showDatePickerInicio) {
         DatePickerDialog(
             onDismissRequest = { showDatePickerInicio = false },
             confirmButton = {
                 TextButton(onClick = {
                     datePickerStateInicio.selectedDateMillis?.let { millis ->
-                        val date = LocalDate.ofEpochDay(millis / 86400000)
+                        val date = Instant.ofEpochMilli(millis)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+
                         fechaInicio = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
                     }
                     showDatePickerInicio = false
-                }) {
-                    Text("Aceptar", color = Color(0xFF2563EB))
-                }
+                }) { Text("Aceptar") }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePickerInicio = false }) {
-                    Text("Cancelar", color = Color(0xFF6B7280))
+                    Text("Cancelar")
                 }
             }
         ) {
-            DatePicker(
-                state = datePickerStateInicio,
-                colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = Color(0xFF2563EB)
-                )
-            )
+            DatePicker(state = datePickerStateInicio)
         }
     }
 
-    // DatePicker para fecha de fin
+    // -------------------------------
+    // DatePicker para Fin
+    // -------------------------------
     if (showDatePickerFin) {
         DatePickerDialog(
             onDismissRequest = { showDatePickerFin = false },
             confirmButton = {
                 TextButton(onClick = {
                     datePickerStateFin.selectedDateMillis?.let { millis ->
-                        val date = LocalDate.ofEpochDay(millis / 86400000)
+                        val date = Instant.ofEpochMilli(millis)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+
                         fechaFin = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
                     }
                     showDatePickerFin = false
-                }) {
-                    Text("Aceptar", color = Color(0xFF2563EB))
-                }
+                }) { Text("Aceptar") }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePickerFin = false }) {
-                    Text("Cancelar", color = Color(0xFF6B7280))
+                    Text("Cancelar")
                 }
             }
         ) {
-            DatePicker(
-                state = datePickerStateFin,
-                colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = Color(0xFF2563EB)
-                )
-            )
+            DatePicker(state = datePickerStateFin)
         }
     }
 }
