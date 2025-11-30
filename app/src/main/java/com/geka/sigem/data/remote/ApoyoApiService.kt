@@ -36,5 +36,10 @@ interface ApoyoApiService {
         val message: String
     )
 
+    @GET("inscripcion-apoyo/usuario/{idUsuario}")
+    suspend fun getApoyosInscritos(
+        @Path("idUsuario") idUsuario: Int
+    ): List<Apoyo>
+
 
 }

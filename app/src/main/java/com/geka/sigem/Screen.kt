@@ -36,7 +36,11 @@ sealed class Screen(val route: String) {
     // APOYOS
     // ----------------------
     object Apoyos : Screen("apoyos")
-    object ApoyoDetalle : Screen("apoyoDetalle/{idApoyo}")
+
+    //object ApoyoDetalle : Screen("apoyoDetalle/{idApoyo}")
+
+    object ApoyoDetalle : Screen("apoyo/{id}")
+    object MisApoyos : Screen("misApoyos")
 
     // ----------------------
     // SOLICITUDES
