@@ -3,7 +3,7 @@ package com.geka.sigem.data.models
 data class Evento(
     val idEvento: Int,
     val nombre: String,          // ← antes era titulo
-    val descripcion: String,
+    val descripcion: String?,
     val fechaInicio: String,     // ← antes era fecha
     val tipo: String,
     val bannerLink: String?,     // ← NUEVO: imagen del evento

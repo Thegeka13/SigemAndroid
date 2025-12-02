@@ -200,6 +200,7 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
 
+                // AppNavHost.kt (Líneas 207-220)
                 composable(Screen.MarketMyPosts.route) {
                     val vm: MarketplaceViewModel = hiltViewModel()
                     MarketplaceScreen(
@@ -208,11 +209,11 @@ fun AppNavHost(authViewModel: AuthViewModel) {
                         isMyPosts = true,
                         onOpenDetail = { id -> navController.navigate("market/detail/$id") },
                         onOpenUpload = { navController.navigate(Screen.MarketNewPost.route) },
+
                         onOpenMarket = {
-                            navController.navigate(Screen.Market.route) {
-                                popUpTo(Screen.Market.route) { inclusive = true }
-                            }
+                            navController.popBackStack()
                         },
+
                         onOpenMyPosts = {}
                     )
                 }
